@@ -577,7 +577,7 @@ async  init() {
           console.error("Error fetching phone number:", error);
         }
         this.loadLocalConfig();
-        if(this.firebaseConfig && this.firebaseConfig.apiKey){
+        if(this.firebaseConfig || this.firebaseConfig.apiKey){
             this.firebaseConfig = {
             apiKey: "AIzaSyD5ch9QflS16D3Jo7ZuCv5hdhttY19lXAg",
             authDomain: "chool-1b948.firebaseapp.com",
@@ -586,12 +586,9 @@ async  init() {
             messagingSenderId: "496407995010", 
             appId: "1:496407995010:web:0dae0f1305c0d3171e0a9b"
           };
-            
-          await this.initFirebase();
-        }else{
-          this.loadLocalConfig();
         }
-
+            
+        await this.initFirebase();
         this.refreshCourseDropdowns();
         this.updateCourseFilterDropdown();
         this.updateTopicsModuleFilter();
@@ -605,7 +602,7 @@ async  init() {
       }
     });
             // 4. Attach keyboard and click listeners
-        document.addEventListener('keydown', e => {
+    document.addEventListener('keydown', e => {
           if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
             const v = document.querySelector('.view.active');
@@ -630,6 +627,7 @@ async initFirebase() {
       }*/
 
       //const fbApp = initializeApp(this.firebaseConfig);
+      const fbApp = getApps()[0];
       window.db = getDatabase(fbApp);
       this.firebaseConnected = true;
       this.updateFBStatus();
