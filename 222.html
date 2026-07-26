@@ -735,6 +735,7 @@ loadLocalConfig() {
     if (this.firebaseConnected && window.db) {
       try {
         const { ref, set } = window.firebaseModules;
+          console.log("Saving the firebase path: users/" + uid + "/data")
         await set(ref(window.db, `users/${uid}/data`), {
           data: this.data,
           syllabusData: this.syllabusData,
@@ -751,12 +752,14 @@ loadLocalConfig() {
           },
           notifSettings: this.notifSettings
         });
+          console.log("Successfully saved to firebase")
       } catch (e) {
         console.error("Failed to save to Firebase", e);
         this.toast("Cloud save failed. Check connection.", true);
       }
     } else {
       // Fallback: Save locally if not connected
+        console.log("saving to LocalStorage for user: ", uid);
       localStorage.setItem('sos_data', JSON.stringify(this.data));
       localStorage.setItem('sos_syl',  JSON.stringify(this.syllabusData));
       localStorage.setItem('sos_courses', JSON.stringify(this.courses));
