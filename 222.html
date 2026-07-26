@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4a90e2">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Student OS">
 <title>Student OS</title>
 <style>
 :root{--blue:#4a90e2;--blue-h:#357abd;--bg:#f4f6f9;--border:#e0e0e0;--dark:#333;--muted:#666;--green:#28a745;--red:#dc3545;--yellow:#ffc107}
@@ -176,6 +180,48 @@ kbd{background:#eee;border:1px solid #ccc;border-radius:3px;padding:1px 5px;font
 .nt-row:last-child{border-bottom:none}
 .nt-label{flex:1;font-size:0.86rem;color:var(--dark)}
 @media(max-width:768px){.fgrid{grid-template-columns:1fr}.notif-opts{grid-template-columns:1fr}.tt-grid{grid-template-columns:50px repeat(5,1fr)}}
+/* Mobile-responsive wrappers */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+@media(max-width: 768px) {
+    /* Make the toolbar a swipeable row instead of wrapping onto multiple lines */
+    .toolbar {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 12px;
+    }
+    .tbtn {
+        white-space: nowrap;
+    }
+    
+    /* Prevent the timetable grid from squishing into unreadable columns */
+    .tt-grid {
+        min-width: 700px; 
+    }
+    #tt-grid-view {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Adjust modal spacing for smaller screens */
+    .mbody {
+        padding: 12px 15px;
+    }
+    .fcard {
+        padding: 15px;
+    }
+    .wa-bar {
+        justify-content: center;
+        text-align: center;
+    }
+}
 </style>
 </head>
 <body style="display: none;" id="app-body">
@@ -233,20 +279,22 @@ kbd{background:#eee;border:1px solid #ccc;border-radius:3px;padding:1px 5px;font
     <select class="fsel" id="af-priority" onchange="app.renderList()"><option value="">All Priorities</option><option>Low</option><option>Medium</option><option>High</option></select>
     <select class="fsel" id="af-course" onchange="app.renderList()"><option value="">All Courses</option></select>
   </div>
-  <table class="dtbl" id="atbl">
-    <thead><tr>
-      <th onclick="app.sortA('id')" data-col="id">ID<span class="sa"></span></th>
-      <th onclick="app.sortA('name')" data-col="name">Assignment Name<span class="sa"></span></th>
-      <th onclick="app.sortA('course')" data-col="course">Course<span class="sa"></span></th>
-      <th onclick="app.sortA('dueDate')" data-col="dueDate">Due Date<span class="sa"></span></th>
-      <th onclick="app.sortA('status')" data-col="status">Status<span class="sa"></span></th>
-      <th onclick="app.sortA('priority')" data-col="priority">Priority<span class="sa"></span></th>
-      <th onclick="app.sortA('grade')" data-col="grade">Grade<span class="sa"></span></th>
-      <th onclick="app.sortA('weight')" data-col="weight">Weight<span class="sa"></span></th>
-      <th>Progress</th><th></th>
-    </tr></thead>
-    <tbody id="atbody"></tbody>
-  </table>
+  <div class="table-responsive">
+    <table class="dtbl" id="atbl">
+      <thead><tr>
+        <th onclick="app.sortA('id')" data-col="id">ID<span class="sa"></span></th>
+        <th onclick="app.sortA('name')" data-col="name">Assignment Name<span class="sa"></span></th>
+        <th onclick="app.sortA('course')" data-col="course">Course<span class="sa"></span></th>
+        <th onclick="app.sortA('dueDate')" data-col="dueDate">Due Date<span class="sa"></span></th>
+        <th onclick="app.sortA('status')" data-col="status">Status<span class="sa"></span></th>
+        <th onclick="app.sortA('priority')" data-col="priority">Priority<span class="sa"></span></th>
+        <th onclick="app.sortA('grade')" data-col="grade">Grade<span class="sa"></span></th>
+        <th onclick="app.sortA('weight')" data-col="weight">Weight<span class="sa"></span></th>
+        <th>Progress</th><th></th>
+      </tr></thead>
+      <tbody id="atbody"></tbody>
+    </table>
+  </div>
 </div>
 
 <div id="view-edit" class="view">
@@ -296,18 +344,20 @@ kbd{background:#eee;border:1px solid #ccc;border-radius:3px;padding:1px 5px;font
     <select class="fsel" id="sf-status" onchange="app.renderSyllabus()"><option value="">All Statuses</option><option>To Do</option><option>In Progress</option><option>Done</option></select>
     <select class="fsel" id="sf-prio" onchange="app.renderSyllabus()"><option value="">All Priorities</option><option>Low</option><option>Medium</option><option>High</option></select>
   </div>
-  <table class="dtbl">
-    <thead><tr>
-      <th onclick="app.sortS('id')" data-col="id">ID<span class="sa"></span></th>
-      <th onclick="app.sortS('module')" data-col="module">Module<span class="sa"></span></th>
-      <th onclick="app.sortS('topic')" data-col="topic">Topic<span class="sa"></span></th>
-      <th onclick="app.sortS('dueDate')" data-col="dueDate">Due Date<span class="sa"></span></th>
-      <th onclick="app.sortS('status')" data-col="status">Status<span class="sa"></span></th>
-      <th onclick="app.sortS('priority')" data-col="priority">Priority<span class="sa"></span></th>
-      <th>Completed</th><th></th>
-    </tr></thead>
-    <tbody id="stbody"></tbody>
-  </table>
+  <div class="table-responsive">
+    <table class="dtbl">
+      <thead><tr>
+        <th onclick="app.sortS('id')" data-col="id">ID<span class="sa"></span></th>
+        <th onclick="app.sortS('module')" data-col="module">Module<span class="sa"></span></th>
+        <th onclick="app.sortS('topic')" data-col="topic">Topic<span class="sa"></span></th>
+        <th onclick="app.sortS('dueDate')" data-col="dueDate">Due Date<span class="sa"></span></th>
+        <th onclick="app.sortS('status')" data-col="status">Status<span class="sa"></span></th>
+        <th onclick="app.sortS('priority')" data-col="priority">Priority<span class="sa"></span></th>
+        <th>Completed</th><th></th>
+      </tr></thead>
+      <tbody id="stbody"></tbody>
+    </table>
+  </div>
 </div>
 
 <div id="view-syllabus-edit" class="view">
@@ -1361,7 +1411,7 @@ loadLocalConfig() {
       const days = { Monday:1,Tuesday:2,Wednesday:3,Thursday:4,Friday:5,Saturday:6,Sunday:7 };
       return (days[a.day]||9)-(days[b.day]||9) || a.start.localeCompare(b.start);
     });
-    let html = '<table class="tt-list-tbl"><thead><tr><th>Day</th><th>Subject</th><th>Lecturer</th><th>Time</th><th>Duration</th><th>Room</th><th></th></tr></thead><tbody>';
+    let html = '<div class="table-responsive"><table class="tt-list-tbl"><thead><tr><th>Day</th><th>Subject</th><th>Lecturer</th><th>Time</th><th>Duration</th><th>Room</th><th></th></tr></thead><tbody>';
     if (!rows.length) html += '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-style:italic">No timetable slots yet.</td></tr>';
     else rows.forEach(s => {
       const conflict = this._ttConflicts.has(s.id);
@@ -1375,7 +1425,7 @@ loadLocalConfig() {
       html += '<td><button class="tbtn" onclick="event.stopPropagation();app.confirmDelete(\'timetable\','+s.id+')">Delete</button></td>';
       html += '</tr>';
     });
-    html += '</tbody></table>';
+    html += '</tbody></table></div>';
     document.getElementById('tt-list-view').innerHTML = html;
   },
   calcDuration(start, end) {
