@@ -1393,7 +1393,7 @@ loadLocalConfig() {
   renderTTGrid() {
     const days = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
     const hours = [];
-    for (let h=8; h<=20; h++) hours.push(String(h).padStart(2,'0')+':00');
+    for (let h=6; h<=20; h++) hours.push(String(h).padStart(2,'0')+':00');
     let html = '<div class="tt-grid">';
     html += '<div class="tt-cell tt-head">Time</div>';
     days.forEach(d => html += '<div class="tt-cell tt-head">'+d+'</div>');
