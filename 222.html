@@ -578,6 +578,15 @@ async  init() {
         }
         this.loadLocalConfig();
         if(this.firebaseConfig && this.firebaseConfig.apiKey){
+            this.firebaseConfig = {
+            apiKey: "AIzaSyD5ch9QflS16D3Jo7ZuCv5hdhttY19lXAg",
+            authDomain: "chool-1b948.firebaseapp.com",
+            projectId: "chool-1b948",
+            databaseURL: "https://chool-1b948-default-rtdb.firebaseio.com/",
+            messagingSenderId: "496407995010", 
+            appId: "1:496407995010:web:0dae0f1305c0d3171e0a9b"
+          };
+            
           await this.initFirebase();
         }else{
           this.loadLocalConfig();
