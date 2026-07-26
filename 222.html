@@ -541,7 +541,7 @@ async  init() {
         this.scheduleReminders();
       } else {
         if(!this.isLoggingOut){
-        window.location.href = 'login.html'; 
+        window.location.href = 'index.html'; 
         }
       }
     });
@@ -726,7 +726,7 @@ loadLocalConfig() {
 
       await signOut(auth);
       setTimeout(()=>{
-      window.location.replace('login.html');
+      window.location.replace('index.html');
       }, 500);
 
     } catch {
