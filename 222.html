@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student OS</title>
+<style>
+:root{--blue:#4a90e2;--blue-h:#357abd;--bg:#f4f6f9;--border:#e0e0e0;--dark:#333;--muted:#666;--green:#28a745;--red:#dc3545;--yellow:#ffc107}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}
+body{background:var(--bg);color:var(--dark)}
+.top-header{background:var(--blue);color:white;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.logo-area{display:flex;align-items:center;gap:15px;font-size:1.4rem;font-weight:700}
+.hamburger{background:rgba(255,255,255,0.2);border:none;color:white;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:1.1rem}
+.header-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn-white{background:white;color:var(--blue);border:none;padding:7px 14px;border-radius:4px;font-weight:700;cursor:pointer;font-size:0.85rem}
+.btn-white:hover{background:#f0f0f0}
+.btn-ghost{background:rgba(255,255,255,0.2);border:none;color:white;padding:7px 12px;border-radius:4px;cursor:pointer;font-size:0.85rem;font-weight:600}
+.btn-ghost:hover{background:rgba(255,255,255,0.35)}
+.user-avatar{background:rgba(255,255,255,0.2);width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer;font-size:0.85rem}
+.gsearch{background:white;border-bottom:2px solid var(--blue);padding:10px 20px;display:none;gap:10px;align-items:center}
+.gsearch.open{display:flex}
+.gsearch input{flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:4px;font-size:0.93rem}
+.gsearch input:focus{outline:none;border-color:var(--blue)}
+.gsearch button{padding:8px 14px;border:none;border-radius:4px;cursor:pointer;background:#eee;color:var(--dark);font-size:0.85rem}
+.toolbar{background:white;padding:10px 20px;display:flex;gap:6px;border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.tbtn{background:none;border:1px solid transparent;padding:6px 12px;border-radius:4px;cursor:pointer;color:var(--dark);font-size:0.88rem}
+.tbtn:hover{background:#f0f0f0}
+.tbtn.active{background:#e3f2fd;color:var(--blue);border-color:var(--blue)}
+.dd-wrap{position:relative;display:inline-block}
+.dd-menu{display:none;position:absolute;right:0;top:100%;background:white;min-width:220px;box-shadow:0 4px 12px rgba(0,0,0,0.15);border-radius:4px;z-index:1000;margin-top:4px;border:1px solid var(--border)}
+.dd-menu.show{display:block}
+.dd-item{padding:10px 16px;cursor:pointer;color:var(--dark);font-size:0.88rem}
+.dd-item:hover{background:#f0f0f0}
+.main{padding:20px;max-width:1400px;margin:0 auto}
+.sec-hdr{background:var(--blue);color:white;padding:11px 20px;border-radius:4px;margin-bottom:16px;font-size:1.05rem;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.sec-hdr button{background:rgba(255,255,255,0.2);border:none;color:white;padding:5px 12px;border-radius:4px;cursor:pointer;font-size:0.82rem;font-weight:600}
+.sec-hdr button:hover{background:rgba(255,255,255,0.35)}
+.view{display:none}.view.active{display:block}
+.tbl-ctrl{display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap}
+.tbl-search{flex:1;min-width:180px;padding:7px 11px;border:1px solid var(--border);border-radius:4px;font-size:0.88rem}
+.tbl-search:focus{outline:none;border-color:var(--blue)}
+.fsel{padding:7px 10px;border:1px solid var(--border);border-radius:4px;font-size:0.83rem;background:white}
+.fsel:focus{outline:none;border-color:var(--blue)}
+.dtbl{width:100%;background:white;border-collapse:collapse;border-radius:4px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.dtbl th,.dtbl td{padding:10px 13px;text-align:left;border-bottom:1px solid var(--border)}
+.dtbl th{background:#f8f9fa;font-weight:600;color:var(--muted);font-size:0.79rem;text-transform:uppercase;letter-spacing:0.4px;cursor:pointer;user-select:none;white-space:nowrap}
+.dtbl th:hover{background:#eef0f3;color:var(--blue)}
+.dtbl th.sort-asc .sa::after{content:' \u25B2';color:var(--blue)}
+.dtbl th.sort-desc .sa::after{content:' \u25BC';color:var(--blue)}
+.dtbl tr:hover{background:#f1f8ff;cursor:pointer}
+.dtbl tr.overdue{background:#fff5f5}
+.dtbl tr.overdue:hover{background:#ffe8e8}
+.dtbl tr.done-row{opacity:0.7}
+.dtbl td.empty{text-align:center;color:var(--muted);padding:28px;font-style:italic;cursor:default}
+.dtbl tr:last-child td{border-bottom:none}
+.sbadge{padding:3px 8px;border-radius:12px;font-size:0.76rem;font-weight:600;white-space:nowrap}
+.s-todo{background:#fff3cd;color:#856404}
+.s-prog{background:#cce5ff;color:#004085}
+.s-done{background:#d4edda;color:#155724}
+.pbadge{padding:3px 8px;border-radius:12px;font-size:0.76rem;font-weight:600}
+.p-low{background:#e2f0d9;color:#375623}
+.p-med{background:#fff2cc;color:#7f6000}
+.p-high{background:#fce4d6;color:#843c0c}
+.overdue-tag{display:inline-block;background:var(--red);color:white;font-size:0.68rem;font-weight:700;padding:2px 5px;border-radius:3px;margin-left:5px;vertical-align:middle}
+.gletter{display:inline-block;margin-left:4px;font-size:0.76rem;font-weight:700;color:var(--muted)}
+.prog-wrap{display:flex;align-items:center;gap:5px}
+.prog-out{flex:1;height:5px;background:#e9ecef;border-radius:3px;min-width:50px}
+.prog-in{height:5px;border-radius:3px;background:var(--blue);transition:width 0.3s}
+.prog-in.full{background:var(--green)}
+.prog-lbl{font-size:0.73rem;color:var(--muted);white-space:nowrap}
+.wa-bar{background:white;border-radius:4px;padding:12px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.08);margin-bottom:14px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.wa-lbl{font-size:0.83rem;color:var(--muted)}
+.wa-val{font-size:1.35rem;font-weight:700;color:var(--blue)}
+.wa-let{font-size:1.1rem;font-weight:700;color:var(--muted);margin-left:5px}
+.wa-sep{width:1px;height:28px;background:var(--border)}
+.fcard{background:white;padding:20px;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.1);margin-bottom:18px}
+.fmeta{display:flex;justify-content:space-between;color:var(--muted);font-size:0.86rem;margin-bottom:18px;font-style:italic;flex-wrap:wrap;gap:5px}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.fgroup{display:flex;flex-direction:column;gap:4px}
+.fgroup label{font-size:0.82rem;color:var(--blue);font-weight:600}
+.fgroup label.req::after{content:" *";color:var(--red)}
+.fc{padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:0.91rem;width:100%;transition:border-color 0.2s;background:white}
+.fc:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(74,144,226,0.18)}
+.fc.err{border-color:var(--red)}
+.ferr{font-size:0.76rem;color:var(--red);margin-top:2px}
+textarea.fc{resize:vertical;min-height:65px}
+.cbgroup{display:flex;gap:18px;margin-top:12px;flex-wrap:wrap}
+.cblbl{display:flex;align-items:center;gap:7px;font-size:0.88rem;color:var(--dark);cursor:pointer}
+.fact{margin-top:20px;display:flex;justify-content:flex-end;gap:10px;align-items:center;flex-wrap:wrap}
+.kbd-hint{font-size:0.76rem;color:var(--muted);margin-right:auto}
+kbd{background:#eee;border:1px solid #ccc;border-radius:3px;padding:1px 5px;font-family:inherit;font-size:0.76rem}
+.notif-card{background:white;border-radius:4px;padding:16px 18px;margin-top:18px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.notif-card h4{margin-bottom:12px;color:var(--blue);font-size:0.95rem}
+.notif-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.notif-opt{border:1px solid var(--border);border-radius:4px;padding:10px}
+.notif-opt label{display:block;font-weight:600;margin-bottom:5px;font-size:0.82rem}
+.notif-items{margin-top:16px}
+.notif-items h4{margin-bottom:8px;color:var(--blue);font-size:0.95rem}
+.nitem{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.nitem:last-child{border-bottom:none}
+.nitem input{margin-right:9px}
+.notif-preview{background:#f8f9fa;border:1px solid var(--border);border-radius:4px;padding:11px 14px;margin-top:14px;font-size:0.83rem}
+.notif-preview strong{display:block;margin-bottom:5px;color:var(--blue)}
+.notif-prev-msg{background:white;border:1px solid var(--border);border-radius:4px;padding:9px 13px;font-size:0.81rem;color:var(--dark);line-height:1.5;white-space:pre-wrap}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--green);color:white;padding:11px 20px;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,0.15);display:none;z-index:3000;font-size:0.88rem;animation:slin 0.25s ease-out}
+.toast.terror{background:var(--red)}
+@keyframes slin{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.modal{display:none;position:fixed;z-index:2000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.45)}
+.modal.show{display:flex;align-items:center;justify-content:center}
+.mcont{background:white;border-radius:8px;width:90%;max-width:520px;box-shadow:0 6px 24px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto}
+.mcont.wide{max-width:700px}
+.mcont.xwide{max-width:860px}
+.mhdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:white;z-index:1}
+.mhdr h3{color:var(--blue);margin:0;font-size:1rem}
+.mclose{font-size:24px;font-weight:700;color:var(--muted);cursor:pointer;line-height:1}
+.mclose:hover{color:var(--dark)}
+.mbody{padding:18px 20px}
+.mfoot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+.btn-danger{background:var(--red);color:white;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-weight:600;font-size:0.88rem}
+.btn-danger:hover{background:#c82333}
+.module-block{background:white;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,0.08);margin-bottom:14px;overflow:hidden}
+.module-block-hdr{background:#f8f9fa;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);cursor:pointer}
+.module-block-hdr:hover{background:#eef0f3}
+.module-title{font-weight:700;font-size:0.95rem;color:var(--dark)}
+.module-prog{display:flex;align-items:center;gap:10px}
+.mod-prog-bar{width:110px;height:7px;background:#e9ecef;border-radius:4px;overflow:hidden}
+.mod-prog-fill{height:7px;background:var(--blue);transition:width 0.3s}
+.mod-pct{font-size:0.78rem;color:var(--muted)}
+.topic-row{border-bottom:1px solid #f0f0f0}
+.topic-row:last-child{border-bottom:none}
+.topic-hdr{padding:10px 16px 10px 28px;display:flex;align-items:center;gap:10px}
+.topic-hdr:hover{background:#fafafa}
+.topic-done-cb{width:15px;height:15px;cursor:pointer;accent-color:var(--green)}
+.topic-name{flex:1;font-size:0.9rem;font-weight:600;cursor:pointer}
+.topic-name.crossed{text-decoration:line-through;color:var(--muted)}
+.topic-expand{font-size:0.75rem;color:var(--muted);margin-left:6px;padding:3px 8px;border:1px solid var(--border);border-radius:3px;background:none;cursor:pointer}
+.topic-actions{display:flex;gap:5px;margin-left:6px}
+.tact-btn{background:none;border:1px solid var(--border);padding:3px 8px;border-radius:3px;cursor:pointer;font-size:0.76rem;color:var(--muted)}
+.tact-btn:hover{background:#f0f0f0;color:var(--dark)}
+.subtopic-list{padding:0 0 6px 44px;background:#fafeff}
+.subtopic-item{padding:8px 16px 8px 0;border-bottom:1px solid #f0f0f0;display:flex;align-items:flex-start;gap:8px}
+.subtopic-item:last-child{border-bottom:none}
+.sub-cb{width:14px;height:14px;margin-top:2px;cursor:pointer;accent-color:var(--blue)}
+.sub-content{flex:1}
+.sub-name{font-size:0.86rem;font-weight:600;color:var(--dark);cursor:pointer}
+.sub-name.crossed{text-decoration:line-through;color:var(--muted)}
+.sub-notes{font-size:0.81rem;color:var(--muted);margin-top:3px;line-height:1.4;white-space:pre-wrap}
+.sub-doc{font-size:0.78rem;margin-top:4px}
+.sub-doc a{color:var(--blue);text-decoration:none;font-weight:600}
+.sub-doc a:hover{text-decoration:underline}
+.sub-search-hl{background:#fff176;border-radius:2px;padding:0 2px}
+.sub-actions{display:flex;gap:5px;margin-left:4px;flex-shrink:0}
+.tt-grid{display:grid;grid-template-columns:70px repeat(5,1fr);gap:2px;background:var(--border);border-radius:6px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.tt-cell{background:white;padding:5px;min-height:52px;position:relative}
+.tt-cell.tt-head{background:#f8f9fa;font-weight:700;font-size:0.78rem;text-align:center;color:var(--muted);text-transform:uppercase;padding:10px 6px}
+.tt-cell.tt-time{background:#f8f9fa;font-size:0.72rem;color:var(--muted);text-align:right;padding:6px 8px;display:flex;align-items:flex-start;justify-content:flex-end}
+.tt-slot{background:var(--blue);color:white;border-radius:4px;padding:5px 7px;margin-bottom:2px;cursor:pointer;font-size:0.74rem;line-height:1.3}
+.tt-slot:hover{opacity:0.85}
+.tt-slot .ts-sub{font-weight:700;display:block}
+.tt-slot .ts-lec{opacity:0.88;display:block;font-size:0.7rem}
+.tt-slot .ts-time{opacity:0.78;font-size:0.68rem;display:block}
+.tt-slot.tt-conflict{background:var(--red)}
+.tt-list-tbl{width:100%;background:white;border-collapse:collapse;border-radius:4px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.tt-list-tbl th,.tt-list-tbl td{padding:10px 13px;text-align:left;border-bottom:1px solid var(--border);font-size:0.86rem}
+.tt-list-tbl th{background:#f8f9fa;font-weight:600;color:var(--muted);font-size:0.78rem;text-transform:uppercase}
+.tt-list-tbl tr:hover{background:#f1f8ff;cursor:pointer}
+.tt-conflict-warn{background:#fff3cd;border:1px solid var(--yellow);border-radius:4px;padding:9px 14px;margin-bottom:10px;font-size:0.84rem;color:#856404;display:none}
+.tt-conflict-warn.show{display:block}
+.fb-config-panel{background:#f8f9fa;border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:14px}
+.fb-config-panel h4{color:var(--blue);margin-bottom:10px;font-size:0.92rem}
+.fb-status{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:0.85rem}
+.fb-dot{width:10px;height:10px;border-radius:50%;background:#ccc}
+.fb-dot.connected{background:var(--green)}
+.fb-dot.error{background:var(--red)}
+.nt-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.nt-row:last-child{border-bottom:none}
+.nt-label{flex:1;font-size:0.86rem;color:var(--dark)}
+@media(max-width:768px){.fgrid{grid-template-columns:1fr}.notif-opts{grid-template-columns:1fr}.tt-grid{grid-template-columns:50px repeat(5,1fr)}}
+</style>
+</head>
+<body style="display: none;" id="app-body">
+
+<header class="top-header">
+  <div class="logo-area"><button class="hamburger" onclick="app.toggleSidebar()">&#9776;</button>Student OS</div>
+  <div class="header-actions">
+    <button class="btn-white" onclick="app.createNew()">Add Assignment</button>
+    <button class="btn-ghost" onclick="app.toggleGSearch()">Search</button>
+    <button class="btn-ghost" onclick="app.showNotifSettings()">Notifications</button>
+    <button class="btn-ghost" onclick="app.logout()" style="background: var(--red);">Logout</button>
+    <div class="user-avatar" title="student.os">ST</div>
+  </div>
+</header>
+
+<div class="gsearch" id="gsearch">
+  <input type="text" id="gsearch-input" placeholder="Search assignments, topics, subtopics, timetable..." oninput="app.globalSearch()">
+  <button onclick="app.toggleGSearch()">Close</button>
+</div>
+
+<nav class="toolbar">
+  <button class="tbtn active" id="tbtn-list"     onclick="app.switchView('list')">Assignments</button>
+  <button class="tbtn"        id="tbtn-syllabus"  onclick="app.switchView('syllabus')">Syllabus</button>
+  <button class="tbtn"        id="tbtn-topics"    onclick="app.switchView('topics')">Topics</button>
+  <button class="tbtn"        id="tbtn-timetable" onclick="app.switchView('timetable')">Timetable</button>
+  <button class="tbtn" onclick="app.createNew()">New</button>
+  <button class="tbtn" onclick="app.cancelEdit()">Cancel</button>
+  <button class="tbtn" onclick="app.deleteCurrent()">Delete</button>
+  <div class="dd-wrap">
+    <button class="tbtn" onclick="app.toggleDD()">More</button>
+    <div class="dd-menu" id="dd-menu">
+      <div class="dd-item" onclick="app.openAddModule()">Add Module / Course</div>
+      <div class="dd-item" onclick="app.showNotifSettings()">Notification Settings</div>
+      <div class="dd-item" onclick="app.addSyllabus()">Add Syllabus</div>
+      <div class="dd-item" onclick="app.openAddTopic()">Add Topic</div>
+      <div class="dd-item" onclick="app.openAddTimetable()">Add Timetable Slot</div>
+      <div class="dd-item" onclick="app.openFirebaseConfig()">Firebase Settings</div>
+    </div>
+  </div>
+</nav>
+
+<main class="main">
+
+<div id="view-list" class="view active">
+  <div class="sec-hdr">Assignments / List</div>
+  <div class="wa-bar" id="wa-bar">
+    <span class="wa-lbl">Weighted Average</span>
+    <span><span class="wa-val" id="wa-val">--</span><span class="wa-let" id="wa-let"></span></span>
+    <div class="wa-sep"></div>
+    <span class="wa-lbl">Based on graded assignments with weight values.</span>
+  </div>
+  <div class="tbl-ctrl">
+    <input type="text" class="tbl-search" id="assign-search" placeholder="Filter by name, course, status..." oninput="app.renderList()">
+    <select class="fsel" id="af-status" onchange="app.renderList()"><option value="">All Statuses</option><option>To Do</option><option>In Progress</option><option>Done</option></select>
+    <select class="fsel" id="af-priority" onchange="app.renderList()"><option value="">All Priorities</option><option>Low</option><option>Medium</option><option>High</option></select>
+    <select class="fsel" id="af-course" onchange="app.renderList()"><option value="">All Courses</option></select>
+  </div>
+  <table class="dtbl" id="atbl">
+    <thead><tr>
+      <th onclick="app.sortA('id')" data-col="id">ID<span class="sa"></span></th>
+      <th onclick="app.sortA('name')" data-col="name">Assignment Name<span class="sa"></span></th>
+      <th onclick="app.sortA('course')" data-col="course">Course<span class="sa"></span></th>
+      <th onclick="app.sortA('dueDate')" data-col="dueDate">Due Date<span class="sa"></span></th>
+      <th onclick="app.sortA('status')" data-col="status">Status<span class="sa"></span></th>
+      <th onclick="app.sortA('priority')" data-col="priority">Priority<span class="sa"></span></th>
+      <th onclick="app.sortA('grade')" data-col="grade">Grade<span class="sa"></span></th>
+      <th onclick="app.sortA('weight')" data-col="weight">Weight<span class="sa"></span></th>
+      <th>Progress</th><th></th>
+    </tr></thead>
+    <tbody id="atbody"></tbody>
+  </table>
+</div>
+
+<div id="view-edit" class="view">
+  <div class="sec-hdr">Assignment / <span id="edit-mode">Edit</span></div>
+  <div class="fcard">
+    <div class="fmeta">
+      <span>Assignment ID: <strong id="f-id">-</strong></span>
+      <span>Last Modified: <strong id="f-modified">-</strong> by student.os</span>
+    </div>
+    <form id="assign-form" onsubmit="event.preventDefault();app.saveAssignment()">
+      <div class="fgrid">
+        <div class="fgroup"><label class="req">Assignment Name</label><input type="text" id="f-name" class="fc"><span class="ferr" id="e-name"></span></div>
+        <div class="fgroup"><label class="req">Course</label><select id="f-course" class="fc"><option value="">Select Course...</option></select><span class="ferr" id="e-course"></span></div>
+        <div class="fgroup"><label>Category</label><select id="f-cat" class="fc"><option>Homework</option><option>Project</option><option>Exam</option><option>Lab</option></select></div>
+        <div class="fgroup"><label class="req">Due Date</label><input type="date" id="f-due" class="fc"><span class="ferr" id="e-due"></span></div>
+        <div class="fgroup"><label class="req">Status</label><select id="f-status" class="fc"><option>To Do</option><option>In Progress</option><option>Done</option></select></div>
+        <div class="fgroup"><label>Priority</label><select id="f-prio" class="fc"><option>Low</option><option>Medium</option><option>High</option></select></div>
+        <div class="fgroup"><label>Grade (%)</label><input type="number" id="f-grade" class="fc" min="0" max="100" placeholder="e.g. 85"></div>
+        <div class="fgroup"><label>Weight (%)</label><input type="number" id="f-weight" class="fc" min="0" max="100" placeholder="e.g. 20"></div>
+        <div class="fgroup"><label>Notes</label><textarea id="f-notes" class="fc" rows="2"></textarea></div>
+      </div>
+      <div class="cbgroup">
+        <label class="cblbl"><input type="checkbox" id="f-completed"> Completed</label>
+        <label class="cblbl"><input type="checkbox" id="f-secured"> Secured</label>
+      </div>
+      <div class="fact">
+        <span class="kbd-hint">Press <kbd>Ctrl</kbd> + <kbd>S</kbd> to save</span>
+        <button type="button" class="tbtn" onclick="app.cancelEdit()">Cancel</button>
+        <button type="submit" class="btn-white" style="background:var(--blue);color:white">Save Assignment</button>
+      </div>
+    </form>
+  </div>
+  <div class="notif-card">
+    <h4>Notification Preferences</h4>
+    <div class="notif-opts">
+      <div class="notif-opt"><label>How often</label><select id="nf-freq" class="fc"><option value="daily">Daily</option><option value="twice-daily">Twice Daily</option><option value="hourly">Hourly</option><option value="only-overdue">Only When Overdue</option></select></div>
+      <div class="notif-opt"><label>Time of day</label><select id="nf-time" class="fc"><option value="morning">Morning (8:00 AM)</option><option value="afternoon">Afternoon (1:00 PM)</option><option value="evening">Evening (6:00 PM)</option><option value="custom">Custom Time</option></select></div>
+    </div>
+    <div class="notif-items"><h4>Items to notify about</h4><div id="nf-items"></div></div>
+  </div>
+</div>
+
+<div id="view-syllabus" class="view">
+  <div class="sec-hdr">Syllabus / List<button onclick="app.addSyllabus()">+ Add</button></div>
+  <div class="tbl-ctrl">
+    <input type="text" class="tbl-search" id="syl-search" placeholder="Filter by module, topic..." oninput="app.renderSyllabus()">
+    <select class="fsel" id="sf-status" onchange="app.renderSyllabus()"><option value="">All Statuses</option><option>To Do</option><option>In Progress</option><option>Done</option></select>
+    <select class="fsel" id="sf-prio" onchange="app.renderSyllabus()"><option value="">All Priorities</option><option>Low</option><option>Medium</option><option>High</option></select>
+  </div>
+  <table class="dtbl">
+    <thead><tr>
+      <th onclick="app.sortS('id')" data-col="id">ID<span class="sa"></span></th>
+      <th onclick="app.sortS('module')" data-col="module">Module<span class="sa"></span></th>
+      <th onclick="app.sortS('topic')" data-col="topic">Topic<span class="sa"></span></th>
+      <th onclick="app.sortS('dueDate')" data-col="dueDate">Due Date<span class="sa"></span></th>
+      <th onclick="app.sortS('status')" data-col="status">Status<span class="sa"></span></th>
+      <th onclick="app.sortS('priority')" data-col="priority">Priority<span class="sa"></span></th>
+      <th>Completed</th><th></th>
+    </tr></thead>
+    <tbody id="stbody"></tbody>
+  </table>
+</div>
+
+<div id="view-syllabus-edit" class="view">
+  <div class="sec-hdr">Syllabus / <span id="syl-mode">Edit</span></div>
+  <div class="fcard">
+    <div class="fmeta">
+      <span>Syllabus ID: <strong id="sf-id">-</strong></span>
+      <span>Last Modified: <strong id="sf-modified">-</strong></span>
+    </div>
+    <form id="syl-form" onsubmit="event.preventDefault();app.saveSyllabus()">
+      <div class="fgrid">
+        <div class="fgroup"><label class="req">Module</label><select id="sf-module" class="fc"><option value="">Select Module...</option></select><span class="ferr" id="e-sf-mod"></span></div>
+        <div class="fgroup"><label class="req">Topic</label><input type="text" id="sf-topic" class="fc"><span class="ferr" id="e-sf-top"></span></div>
+        <div class="fgroup"><label>Due Date</label><input type="date" id="sf-due" class="fc"></div>
+        <div class="fgroup"><label>Status</label><select id="sf-sstatus" class="fc"><option>To Do</option><option>In Progress</option><option>Done</option></select></div>
+        <div class="fgroup"><label>Priority</label><select id="sf-sprio" class="fc"><option>Low</option><option>Medium</option><option>High</option></select></div>
+        <div class="fgroup"><label>Notes</label><textarea id="sf-notes" class="fc" rows="2"></textarea></div>
+      </div>
+      <div class="cbgroup">
+        <label class="cblbl"><input type="checkbox" id="sf-completed"> Completed</label>
+        <label class="cblbl"><input type="checkbox" id="sf-secured"> Secured</label>
+      </div>
+      <div class="fact">
+        <span class="kbd-hint">Press <kbd>Ctrl</kbd> + <kbd>S</kbd> to save</span>
+        <button type="button" class="tbtn" onclick="app.switchView('syllabus')">Cancel</button>
+        <button type="submit" class="btn-white" style="background:var(--blue);color:white">Save Syllabus</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="view-topics" class="view">
+  <div class="sec-hdr">Topics / Modules<button onclick="app.openAddTopic()">+ Add Topic</button></div>
+  <div class="tbl-ctrl">
+    <input type="text" class="tbl-search" id="topics-search" placeholder="Search topics, subtopics, notes..." oninput="app.renderTopics()">
+    <select class="fsel" id="topics-module-filter" onchange="app.renderTopics()"><option value="">All Modules</option></select>
+    <select class="fsel" id="topics-status-filter" onchange="app.renderTopics()"><option value="">All Statuses</option><option>To Do</option><option>In Progress</option><option>Done</option></select>
+  </div>
+  <div id="topics-container"></div>
+</div>
+
+<div id="view-timetable" class="view">
+  <div class="sec-hdr">Timetable<button onclick="app.openAddTimetable()">+ Add Slot</button></div>
+  <div class="tbl-ctrl">
+    <button class="tbtn active" id="tt-btn-grid" onclick="app.switchTTView('grid')">Weekly Grid</button>
+    <button class="tbtn" id="tt-btn-list" onclick="app.switchTTView('list')">List</button>
+    <button class="tbtn" style="margin-left:auto" onclick="app.exportTimetable()">Export CSV</button>
+    <button class="tbtn" onclick="app.exportTimetableHTML()">Export HTML</button>
+  </div>
+  <div id="tt-conflict-warn" class="tt-conflict-warn"></div>
+  <div id="tt-grid-view"></div>
+  <div id="tt-list-view" style="display:none"></div>
+</div>
+
+</main>
+
+<div id="toast" class="toast"></div>
+
+<div id="modules-modal" class="modal"><div class="mcont">
+  <div class="mhdr"><h3>Add New Module / Course</h3><span class="mclose" onclick="app.closeModulesModal()">&times;</span></div>
+  <div class="mbody"><div class="fgroup"><label class="req">Module / Course Name</label><input type="text" id="new-module-name" class="fc" placeholder="e.g. Biology 101"><span class="ferr" id="e-module"></span></div></div>
+  <div class="mfoot"><button class="tbtn" onclick="app.closeModulesModal()">Cancel</button><button class="btn-white" style="background:var(--blue);color:white" onclick="app.saveNewModule()">Add Module</button></div>
+</div></div>
+
+<div id="notif-modal" class="modal"><div class="mcont wide">
+  <div class="mhdr"><h3>Notification Settings</h3><span class="mclose" onclick="app.closeNotifSettings()">&times;</span></div>
+  <div class="mbody">
+    <div class="fb-config-panel">
+      <h4>Reminder Timing (Timetable & Assignments)</h4>
+      <div class="nt-row"><span class="nt-label">Remind me before a class/assignment starts</span>
+        <select id="nt-lead" class="fsel" onchange="app.updateNotifPreview()">
+          <option value="5">5 minutes</option><option value="10" selected>10 minutes</option><option value="15">15 minutes</option>
+          <option value="30">30 minutes</option><option value="60">1 hour</option><option value="120">2 hours</option><option value="1440">1 day</option>
+        </select>
+      </div>
+      <div class="nt-row"><span class="nt-label">Enable push notifications (via Firebase)</span>
+        <label class="cblbl"><input type="checkbox" id="nt-push-enable"> Enable</label>
+      </div>
+    </div>
+    <div class="notif-opts">
+      <div class="notif-opt"><label>How often</label><select id="nf-freq-modal" class="fc" onchange="app.updateNotifPreview()"><option value="daily">Daily</option><option value="twice-daily">Twice Daily</option><option value="hourly">Hourly</option><option value="only-overdue">Only When Overdue</option></select></div>
+      <div class="notif-opt"><label>Time of day</label><select id="nf-time-modal" class="fc" onchange="app.updateNotifPreview()"><option value="morning">Morning (8:00 AM)</option><option value="afternoon">Afternoon (1:00 PM)</option><option value="evening">Evening (6:00 PM)</option><option value="custom">Custom Time</option></select></div>
+    </div>
+    <div class="notif-items"><h4>Assignments to notify about</h4><div id="nf-items-modal"></div></div>
+    <div class="notif-items"><h4>Timetable slots to notify about</h4><div id="nf-items-tt-modal"></div></div>
+    <div class="notif-preview"><strong>Sample Notification Preview</strong><div class="notif-prev-msg" id="notif-prev-msg">Select items above to see a preview.</div></div>
+  </div>
+  <div class="mfoot"><button class="tbtn" onclick="app.closeNotifSettings()">Cancel</button><button class="btn-white" style="background:var(--blue);color:white" onclick="app.saveNotifSettings()">Save Settings</button></div>
+</div></div>
+
+<div id="confirm-modal" class="modal"><div class="mcont">
+  <div class="mhdr"><h3>Confirm Delete</h3><span class="mclose" onclick="app.closeConfirm()">&times;</span></div>
+  <div class="mbody"><p id="confirm-msg">Are you sure you want to delete this item?</p><p style="font-size:0.83rem;color:var(--muted);margin-top:6px">This action cannot be undone.</p></div>
+  <div class="mfoot"><button class="tbtn" onclick="app.closeConfirm()">Cancel</button><button class="btn-danger" onclick="app.confirmDeleteAction()">Delete</button></div>
+</div></div>
+
+<div id="topic-modal" class="modal"><div class="mcont wide">
+  <div class="mhdr"><h3 id="topic-modal-title">Add Topic</h3><span class="mclose" onclick="app.closeTopicModal()">&times;</span></div>
+  <div class="mbody">
+    <div class="fgrid" style="grid-template-columns:1fr 1fr">
+      <div class="fgroup"><label class="req">Module</label><select id="t-module" class="fc"><option value="">Select Module...</option></select><span class="ferr" id="e-t-mod"></span></div>
+      <div class="fgroup"><label class="req">Topic Name</label><input type="text" id="t-name" class="fc"><span class="ferr" id="e-t-name"></span></div>
+      <div class="fgroup"><label>Status</label><select id="t-status" class="fc"><option>To Do</option><option>In Progress</option><option>Done</option></select></div>
+      <div class="fgroup"><label>Done</label><label class="cblbl" style="margin-top:8px"><input type="checkbox" id="t-done"> Mark as done</label></div>
+    </div>
+  </div>
+  <div class="mfoot"><button class="tbtn" onclick="app.closeTopicModal()">Cancel</button><button class="btn-white" style="background:var(--blue);color:white" onclick="app.saveTopic()">Save Topic</button></div>
+</div></div>
+
+<div id="subtopic-modal" class="modal"><div class="mcont wide">
+  <div class="mhdr"><h3 id="sub-modal-title">Add Subtopic</h3><span class="mclose" onclick="app.closeSubModal()">&times;</span></div>
+  <div class="mbody">
+    <div class="fgrid" style="grid-template-columns:1fr 1fr">
+      <div class="fgroup"><label class="req">Subtopic Name</label><input type="text" id="sub-name" class="fc"><span class="ferr" id="e-sub-name"></span></div>
+      <div class="fgroup"><label>Status</label><select id="sub-status" class="fc"><option>To Do</option><option>In Progress</option><option>Done</option></select></div>
+    </div>
+    <div class="fgroup" style="margin-top:14px"><label>Notes</label><textarea id="sub-notes" class="fc" rows="4" placeholder="Type your notes here..."></textarea></div>
+    <div class="fgroup" style="margin-top:14px"><label>Supporting Document (optional)</label>
+      <input type="file" id="sub-doc-file" class="fc" onchange="app.previewSubDoc()">
+      <div id="sub-doc-preview" style="margin-top:6px;font-size:0.83rem;color:var(--muted)"></div>
+    </div>
+    <label class="cblbl" style="margin-top:12px"><input type="checkbox" id="sub-done"> Mark as done</label>
+  </div>
+  <div class="mfoot"><button class="tbtn" onclick="app.closeSubModal()">Cancel</button><button class="btn-white" style="background:var(--blue);color:white" onclick="app.saveSubtopic()">Save Subtopic</button></div>
+</div></div>
+
+<div id="tt-modal" class="modal"><div class="mcont wide">
+  <div class="mhdr"><h3 id="tt-modal-title">Add Timetable Slot</h3><span class="mclose" onclick="app.closeTTModal()">&times;</span></div>
+  <div class="mbody">
+    <div class="fgrid" style="grid-template-columns:1fr 1fr">
+      <div class="fgroup"><label class="req">Subject</label><input type="text" id="tt-subject" class="fc" placeholder="e.g. Data Structures"><span class="ferr" id="e-tt-sub"></span></div>
+      <div class="fgroup"><label class="req">Lecturer Name</label><input type="text" id="tt-lecturer" class="fc" placeholder="e.g. Dr. Smith"><span class="ferr" id="e-tt-lec"></span></div>
+      <div class="fgroup"><label class="req">Day</label>
+        <select id="tt-day" class="fc"><option value="">Select day...</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select>
+        <span class="ferr" id="e-tt-day"></span>
+      </div>
+      <div class="fgroup"><label>Room / Location</label><input type="text" id="tt-room" class="fc" placeholder="e.g. Room 204"></div>
+      <div class="fgroup"><label class="req">Start Time</label><input type="time" id="tt-start" class="fc" onchange="app.updateTTDuration()"><span class="ferr" id="e-tt-start"></span></div>
+      <div class="fgroup"><label class="req">End Time</label><input type="time" id="tt-end" class="fc" onchange="app.updateTTDuration()"><span class="ferr" id="e-tt-end"></span></div>
+    </div>
+    <div style="margin-top:10px;font-size:0.86rem;color:var(--muted)">Duration: <strong id="tt-duration">--</strong></div>
+    <div class="fgroup" style="margin-top:14px"><label>Notes</label><textarea id="tt-notes" class="fc" rows="2"></textarea></div>
+    <div id="tt-conflict-inline" class="tt-conflict-warn" style="margin-top:12px"></div>
+  </div>
+  <div class="mfoot"><button class="tbtn" onclick="app.closeTTModal()">Cancel</button><button class="btn-white" style="background:var(--blue);color:white" onclick="app.saveTimetable()">Save Slot</button></div>
+</div></div>
+
+<div id="fb-modal" class="modal"><div class="mcont wide">
+  <div class="mhdr"><h3>Firebase Settings</h3><span class="mclose" onclick="app.closeFBModal()">&times;</span></div>
+  <div class="mbody">
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px">Paste your Firebase project credentials to enable cloud sync and push notifications. Get these from your Firebase console.</p>
+    <div class="fb-status"><div class="fb-dot" id="fb-status-dot"></div><span id="fb-status-text">Not connected</span></div>
+    <div class="fgrid" style="grid-template-columns:1fr 1fr">
+      <div class="fgroup"><label>API Key</label><input type="text" id="fb-api-key" class="fc" placeholder="AIzaSy..."></div>
+      <div class="fgroup"><label>Auth Domain</label><input type="text" id="fb-auth-domain" class="fc" placeholder="myproject.firebaseapp.com"></div>
+      <div class="fgroup"><label>Project ID</label><input type="text" id="fb-project-id" class="fc" placeholder="myproject"></div>
+      <div class="fgroup"><label>Database URL</label><input type="text" id="fb-db-url" class="fc" placeholder="https://chool-1b948-default-rtdb.firebaseio.com/"></div>
+      <div class="fgroup"><label>Storage Bucket</label><input type="text" id="fb-storage" class="fc" placeholder="myproject.appspot.com"></div>
+      <div class="fgroup"><label>Messaging Sender ID</label><input type="text" id="fb-sender" class="fc"></div>
+      <div class="fgroup"><label>App ID</label><input type="text" id="fb-app-id" class="fc"></div>
+      <div class="fgroup" style="grid-column:span 2"><label>VAPID Key (for push notifications)</label><input type="text" id="fb-vapid" class="fc" placeholder="BJxx..."></div>
+    </div>
+  </div>
+  <div class="mfoot"><button class="tbtn" onclick="app.closeFBModal()">Cancel</button><button class="btn-white" style="background:var(--blue);color:white" onclick="app.saveFBConfig()">Save & Test</button></div>
+</div></div>
+
+
+<script type="module">
+  import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
+
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const myFirebaseConfig = {
+    apiKey: "AIzaSyD5ch9QflS16D3Jo7ZuCv5hdhttY19lXAg",
+    authDomain: "chool-1b948.firebaseapp.com",
+    projectId: "chool-1b948",
+    databaseURL: "https://chool-1b948-default-rtdb.firebaseio.com/",
+    messagingSenderId: "496407995010", 
+    appId: "1:496407995010:web:0dae0f1305c0d3171e0a9b"
+};
+
+const fbApp = getApps().length === 0 ? initializeApp(myFirebaseConfig) : getApps()[0];
+const auth = getAuth(fbApp);
+const firestoreDb = getFirestore(fbApp);
+  
+const app = {
+  isLoggingOut: false,
+  courses: [], data: [], syllabusData: [], topics: [], subtopics: [], timetable: [],
+  currentId: null, currentSyllabusId: null, currentTopicId: null, currentSubTopicId: null, currentTTId: null,
+  nextId: 1, nextSyllabusId: 1, nextTopicId: 1, nextSubtopicId: 1, nextTTId: 1,
+  sortCol: 'id', sortDir: 'asc', sylSortCol: 'id', sylSortDir: 'asc',
+  pendingDeleteFn: null, ttView: 'grid', expandedTopics: {},
+  notifSettings: { frequency:'daily', time:'morning', leadMinutes:10, pushEnabled:false, selectedItems:[], selectedTT:[] },
+  firebaseConfig: { apiKey:'', authDomain:'', projectId:'', storageBucket:'', messagingSenderId:'', appId:'', vapidKey:'' },
+  firebaseConnected: false,
+  reminderTimers: [],
+  currentUser: [],
+  userPhone: [],
+
+async  init() {
+
+  onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        this.currentUser = user;
+        document.getElementById('app-body').style.display = 'block';
+        // 2. User is logged in. Fetch their phone number from Firestore
+        try {
+          const docSnap = await getDoc(doc(firestoreDb, "users", user.uid));
+          if (docSnap.exists()) {
+            this.userPhone = docSnap.data().phoneNumber;
+            console.log("User phone number loaded:", this.userPhone);
+          }
+        } catch (error) {
+          console.error("Error fetching phone number:", error);
+        }
+        this.loadLocalConfig();
+        if(this.firebaseConfig && this.firebaseConfig.apiKey){
+          await this.initFirebase();
+        }else{
+          this.loadLocalConfig();
+        }
+
+        this.refreshCourseDropdowns();
+        this.updateCourseFilterDropdown();
+        this.updateTopicsModuleFilter();
+        this.renderList(); this.renderSyllabus(); this.renderTopics(); this.renderTimetable();
+        this.renderWA(); this.renderNotifItems();
+        this.scheduleReminders();
+      } else {
+        if(!this.isLoggingOut){
+        window.location.href = 'login.html'; 
+        }
+      }
+    });
+            // 4. Attach keyboard and click listeners
+        document.addEventListener('keydown', e => {
+          if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            const v = document.querySelector('.view.active');
+            if (!v) return;
+            if (v.id === 'view-edit') this.saveAssignment();
+            if (v.id === 'view-syllabus-edit') this.saveSyllabus();
+          }
+        });
+        document.addEventListener('click', e => {
+          if (!e.target.closest('.dd-wrap')) document.getElementById('dd-menu').classList.remove('show');
+        });
+  },
+
+
+async initFirebase() {
+    try {
+      const {initializeApp, getApps, getDatabase, ref, get, child } = window.firebaseModules;
+      
+      // Prevent duplicate-app error by deleting any existing connection before starting a new one
+      /*if (getApps().length > 0) {
+        await deleteApp(getApps()[0]);
+      }*/
+
+      //const fbApp = initializeApp(this.firebaseConfig);
+      window.db = getDatabase(fbApp);
+      this.firebaseConnected = true;
+      this.updateFBStatus();
+
+      // Check if user provided a VAPID key in settings
+      if (this.firebaseConfig && this.firebaseConfig.vapidKey) {
+        const { getMessaging, getToken, onMessage } = window.firebaseModules;
+        const messaging = getMessaging(fbApp);
+        
+        // Only request a token if the user has explicitly allowed notifications
+        if (Notification.permission === 'granted' && 'serviceWorker' in navigator) {
+          
+          // 1. Manually register the Service Worker
+          navigator.serviceWorker.register('./firebase-messaging-sw.js')
+            .then((registration) => {
+              console.log('Service Worker registered successfully!', registration.scope);
+              
+              // 2. CRITICAL FIX: Wait for the Service Worker to be fully active
+              return navigator.serviceWorker.ready;
+            })
+            .then((readyRegistration) => {
+              console.log('Service Worker is active and ready!');
+              
+              // 3. Now ask for the token
+              return getToken(messaging, { 
+                vapidKey: this.firebaseConfig.vapidKey,
+                serviceWorkerRegistration: readyRegistration 
+              });
+            })
+            .then((currentToken) => {
+              if (currentToken) {
+                console.log('Firebase Push Token:', currentToken);
+              } else {
+                console.log('No registration token available.');
+              }
+            })
+            .catch((err) => console.error('An error occurred during token retrieval or SW registration:', err));
+
+          // Listen for messages pushed from the Firebase Console
+          onMessage(messaging, (payload) => {
+            console.log('Message received.', payload);
+            this.toast(`Cloud Push: ${payload.notification.title}`);
+            new Notification(payload.notification.title, { body: payload.notification.body });
+          });
+          
+        } else {
+          console.warn('Push notifications are not granted by the browser, or Service Workers are not supported.');
+        }
+      }
+
+      
+      // Fetch data from Firebase
+      const dbRef = ref(window.db);
+      const snapshot = await get(child(dbRef, `users/${this.currentUser.uid}/data`));
+      if (snapshot.exists()) {
+        const cloudData = snapshot.val();
+        this.data = cloudData.data || [];
+        this.syllabusData = cloudData.syllabusData || [];
+        this.courses = cloudData.courses || [];
+        this.topics = cloudData.topics || [];
+        this.subtopics = cloudData.subtopics || [];
+        this.timetable = cloudData.timetable || [];
+        this.nextId = cloudData.counters?.nextId || 1;
+        this.nextSyllabusId = cloudData.counters?.nextSyllabusId || 1;
+        this.nextTopicId = cloudData.counters?.nextTopicId || 1;
+        this.nextSubtopicId = cloudData.counters?.nextSubtopicId || 1;
+        this.nextTTId = cloudData.counters?.nextTTId || 1;
+        this.notifSettings = cloudData.notifSettings || this.notifSettings;
+      }
+    } catch(e) {
+      console.error("Firebase connection failed", e);
+      this.firebaseConnected = false;
+      this.updateFBStatus();
+      this.loadLocalData(); // Fallback if offline
+    }
+  },
+
+  // ── Storage ──
+loadLocalConfig() {
+    try {
+      this.firebaseConfig = JSON.parse(localStorage.getItem('sos_fb') || 'null') || this.firebaseConfig;
+      this.notifSettings = JSON.parse(localStorage.getItem('sos_notif') || 'null') || this.notifSettings;
+    } catch(e) { console.warn('Config load err', e); }
+  },
+
+  loadLocalData() {
+    try {
+      if(!this.currentUser) return;
+      const uid = this.currentUser.uid;
+
+      this.data          = JSON.parse(localStorage.getItem('sos_data')    || '[]');
+      this.syllabusData  = JSON.parse(localStorage.getItem('sos_syl')     || '[]');
+      this.courses       = JSON.parse(localStorage.getItem('sos_courses') || '[]');
+      this.topics        = JSON.parse(localStorage.getItem('sos_topics')  || '[]');
+      this.subtopics     = JSON.parse(localStorage.getItem('sos_subs')    || '[]');
+      this.timetable     = JSON.parse(localStorage.getItem('sos_tt')      || '[]');
+      this.nextId        = parseInt(localStorage.getItem('sos_nextId'))   || 1;
+      this.nextSyllabusId= parseInt(localStorage.getItem('sos_nextSId'))  || 1;
+      this.nextTopicId   = parseInt(localStorage.getItem('sos_nextTop'))  || 1;
+      this.nextSubtopicId= parseInt(localStorage.getItem('sos_nextSub'))  || 1;
+      this.nextTTId      = parseInt(localStorage.getItem('sos_nextTT'))   || 1;
+    } catch(e){ console.warn('Local data load err', e); }
+  },
+
+  async save() {
+    // Always save config locally so the app remembers the database connection
+    localStorage.setItem('sos_fb', JSON.stringify(this.firebaseConfig));
+    localStorage.setItem('sos_notif', JSON.stringify(this.notifSettings));
+    const uid = this.currentUser.uid;
+
+    // If connected, sync to Firebase
+    if (this.firebaseConnected && window.db) {
+      try {
+        const { ref, set } = window.firebaseModules;
+        await set(ref(window.db, 'studentOS_data'), {
+          data: this.data,
+          syllabusData: this.syllabusData,
+          courses: this.courses,
+          topics: this.topics,
+          subtopics: this.subtopics,
+          timetable: this.timetable,
+          counters: {
+            nextId: this.nextId,
+            nextSyllabusId: this.nextSyllabusId,
+            nextTopicId: this.nextTopicId,
+            nextSubtopicId: this.nextSubtopicId,
+            nextTTId: this.nextTTId
+          },
+          notifSettings: this.notifSettings
+        });
+      } catch (e) {
+        console.error("Failed to save to Firebase", e);
+        this.toast("Cloud save failed. Check connection.", true);
+      }
+    } else {
+      // Fallback: Save locally if not connected
+      localStorage.setItem('sos_data', JSON.stringify(this.data));
+      localStorage.setItem('sos_syl',  JSON.stringify(this.syllabusData));
+      localStorage.setItem('sos_courses', JSON.stringify(this.courses));
+      localStorage.setItem('sos_topics', JSON.stringify(this.topics));
+      localStorage.setItem('sos_subs',   JSON.stringify(this.subtopics));
+      localStorage.setItem('sos_tt',     JSON.stringify(this.timetable));
+      localStorage.setItem('sos_nextId', this.nextId);
+      localStorage.setItem('sos_nextSId', this.nextSyllabusId);
+      localStorage.setItem('sos_nextTop', this.nextTopicId);
+      localStorage.setItem('sos_nextSub', this.nextSubtopicId);
+      localStorage.setItem('sos_nextTT',  this.nextTTId);
+    }
+  },
+  async logout(){
+    try{
+      this.isLoggingOut = true;
+
+      await signOut(auth);
+      setTimeout(()=>{
+      window.location.replace('login.html');
+      }, 500);
+
+    } catch {
+      console.error("Logout error: ", error);
+      this.isLoggingOut = false;
+      this.toast("failed to log out. please try again", true);
+
+    }
+  },
+
+/*  save() {
+    localStorage.setItem('sos_data', JSON.stringify(this.data));
+    localStorage.setItem('sos_syl',  JSON.stringify(this.syllabusData));
+    localStorage.setItem('sos_courses', JSON.stringify(this.courses));
+    localStorage.setItem('sos_topics', JSON.stringify(this.topics));
+    localStorage.setItem('sos_subs',   JSON.stringify(this.subtopics));
+    localStorage.setItem('sos_tt',     JSON.stringify(this.timetable));
+    localStorage.setItem('sos_nextId', this.nextId);
+    localStorage.setItem('sos_nextSId', this.nextSyllabusId);
+    localStorage.setItem('sos_nextTop', this.nextTopicId);
+    localStorage.setItem('sos_nextSub', this.nextSubtopicId);
+    localStorage.setItem('sos_nextTT',  this.nextTTId);
+    localStorage.setItem('sos_notif',   JSON.stringify(this.notifSettings));
+    localStorage.setItem('sos_fb',      JSON.stringify(this.firebaseConfig));
+  },*/
+/*  load() {
+    try {
+      this.data          = JSON.parse(localStorage.getItem('sos_data')    || '[]');
+      this.syllabusData  = JSON.parse(localStorage.getItem('sos_syl')     || '[]');
+      this.courses       = JSON.parse(localStorage.getItem('sos_courses') || '[]');
+      this.topics        = JSON.parse(localStorage.getItem('sos_topics')  || '[]');
+      this.subtopics     = JSON.parse(localStorage.getItem('sos_subs')    || '[]');
+      this.timetable     = JSON.parse(localStorage.getItem('sos_tt')      || '[]');
+      this.nextId        = parseInt(localStorage.getItem('sos_nextId'))   || 1;
+      this.nextSyllabusId= parseInt(localStorage.getItem('sos_nextSId'))  || 1;
+      this.nextTopicId   = parseInt(localStorage.getItem('sos_nextTop'))  || 1;
+      this.nextSubtopicId= parseInt(localStorage.getItem('sos_nextSub'))  || 1;
+      this.nextTTId      = parseInt(localStorage.getItem('sos_nextTT'))   || 1;
+      this.notifSettings = JSON.parse(localStorage.getItem('sos_notif')   || 'null') || this.notifSettings;
+      this.firebaseConfig= JSON.parse(localStorage.getItem('sos_fb')      || 'null') || this.firebaseConfig;
+    } catch(e){ console.warn('load err', e); }
+  },*/
+
+  // ── Helpers ──
+  ts() { const n = new Date(); const h = n.getHours(); return (n.getMonth()+1)+'/'+n.getDate()+'/'+n.getFullYear()+' '+((h%12)||12)+':'+String(n.getMinutes()).padStart(2,'0')+' '+(h>=12?'PM':'AM'); },
+  isOverdue(due, status) { if (!due || status==='Done') return false; return new Date(due) < new Date(new Date().toDateString()); },
+  letter(g) { const n = parseFloat(g); if (isNaN(n)) return ''; if (n>=90) return 'A'; if (n>=80) return 'B'; if (n>=70) return 'C'; if (n>=60) return 'D'; return 'F'; },
+  progFromStatus(s) { return s==='Done' ? 100 : s==='In Progress' ? 50 : 0; },
+  esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); },
+  hl(text, q) { if (!q) return this.esc(text); const s = this.esc(text); const rx = new RegExp('(' + q.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\$&') + ')', 'ig'); return s.replace(rx, '<span class="sub-search-hl">$1</span>'); },
+
+  // ── Views ──
+  switchView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const target = document.getElementById('view-' + name);
+    if (target) target.classList.add('active');
+    document.querySelectorAll('.tbtn[id^="tbtn-"]').forEach(b => b.classList.remove('active'));
+    const btn = document.getElementById('tbtn-' + name);
+    if (btn) btn.classList.add('active');
+    if (name === 'topics') this.renderTopics();
+    if (name === 'timetable') this.renderTimetable();
+  },
+  toggleDD() { document.getElementById('dd-menu').classList.toggle('show'); },
+  toggleSidebar() {},
+  toggleGSearch() {
+    const b = document.getElementById('gsearch');
+    b.classList.toggle('open');
+    if (b.classList.contains('open')) document.getElementById('gsearch-input').focus();
+    else document.getElementById('gsearch-input').value = '';
+  },
+  globalSearch() {
+    const q = document.getElementById('gsearch-input').value.trim().toLowerCase();
+    if (!q) return;
+    const aH = this.data.filter(i => (i.name+i.course+i.status+i.priority).toLowerCase().includes(q)).length;
+    const tH = this.topics.filter(t => t.name.toLowerCase().includes(q)).length + this.subtopics.filter(s => (s.name+' '+(s.notes||'')).toLowerCase().includes(q)).length;
+    const ttH= this.timetable.filter(t => (t.subject+' '+t.lecturer).toLowerCase().includes(q)).length;
+    // Fill each view's search box
+    document.getElementById('assign-search').value = q;
+    document.getElementById('topics-search').value = q;
+    if (aH >= tH && aH >= ttH) this.switchView('list');
+    else if (tH >= ttH) this.switchView('topics');
+    else this.switchView('timetable');
+    this.renderList(); this.renderTopics(); this.renderTimetable();
+  },
+
+  // ── Course dropdowns ──
+  refreshCourseDropdowns() {
+    ['f-course', 'sf-module', 't-module'].forEach(id => {
+      const sel = document.getElementById(id); if (!sel) return;
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">Select...</option>';
+      this.courses.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
+      if (cur) sel.value = cur;
+    });
+  },
+  updateCourseFilterDropdown() {
+    const sel = document.getElementById('af-course'); if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">All Courses</option>';
+    this.courses.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
+    if (cur) sel.value = cur;
+  },
+  updateTopicsModuleFilter() {
+    const sel = document.getElementById('topics-module-filter'); if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">All Modules</option>';
+    this.courses.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
+    if (cur) sel.value = cur;
+  },
+
+  // ── Weighted Avg ──
+  renderWA() {
+    const g = this.data.filter(i => parseFloat(i.grade)>=0 && parseFloat(i.weight)>0);
+    if (!g.length) { document.getElementById('wa-val').textContent = '--'; document.getElementById('wa-let').textContent = ''; return; }
+    const tw = g.reduce((s,i)=>s+parseFloat(i.weight),0);
+    const w  = g.reduce((s,i)=>s+parseFloat(i.grade)*parseFloat(i.weight),0);
+    const avg = tw>0 ? (w/tw).toFixed(1) : '--';
+    document.getElementById('wa-val').textContent = avg + '%';
+    document.getElementById('wa-let').textContent = '(' + this.letter(avg) + ')';
+  },
+
+  // ── Assignments List ──
+  sortA(c) { if (this.sortCol===c) this.sortDir=this.sortDir==='asc'?'desc':'asc'; else { this.sortCol=c; this.sortDir='asc'; } this.renderList(); },
+  renderList() {
+    const q = (document.getElementById('assign-search')?.value||'').toLowerCase();
+    const fS = document.getElementById('af-status')?.value||'';
+    const fP = document.getElementById('af-priority')?.value||'';
+    const fC = document.getElementById('af-course')?.value||'';
+    let rows = this.data.filter(i => {
+      const mq = !q || (i.name+i.course+i.status+i.priority).toLowerCase().includes(q);
+      return mq && (!fS || i.status===fS) && (!fP || i.priority===fP) && (!fC || i.course===fC);
+    });
+    rows.sort((a,b) => {
+      let av = a[this.sortCol]??'', bv = b[this.sortCol]??'';
+      if (['id','grade','weight'].includes(this.sortCol)) { av=parseFloat(av)||0; bv=parseFloat(bv)||0; }
+      else { av=String(av).toLowerCase(); bv=String(bv).toLowerCase(); }
+      return this.sortDir==='asc' ? (av>bv?1:-1) : (av<bv?1:-1);
+    });
+    document.querySelectorAll('#atbl th[data-col]').forEach(th => {
+      th.classList.remove('sort-asc','sort-desc');
+      if (th.dataset.col===this.sortCol) th.classList.add('sort-'+this.sortDir);
+    });
+    const tb = document.getElementById('atbody');
+    tb.innerHTML = '';
+    if (!rows.length) { tb.innerHTML = '<tr><td class="empty" colspan="10">No assignments found.</td></tr>'; this.renderWA(); return; }
+    rows.forEach(item => {
+      const sc = item.status==='To Do'?'s-todo':item.status==='In Progress'?'s-prog':'s-done';
+      const pc = 'p-'+(item.priority||'Low').substring(0,3).toLowerCase().replace('med','med').replace('hig','high').replace('low','low');
+      const pClass = item.priority==='Low'?'p-low':item.priority==='Medium'?'p-med':'p-high';
+      const overdue = this.isOverdue(item.dueDate, item.status);
+      const pct = this.progFromStatus(item.status);
+      const gl = item.grade && item.grade!=='-' ? this.letter(item.grade) : '';
+      const tr = document.createElement('tr');
+      if (overdue) tr.classList.add('overdue');
+      if (item.status==='Done') tr.classList.add('done-row');
+      tr.onclick = () => app.editAssignment(item.id);
+      tr.innerHTML =
+        '<td><strong>#'+String(item.id).padStart(3,'0')+'</strong></td>'+
+        '<td>'+this.esc(item.name)+(overdue?'<span class="overdue-tag">OVERDUE</span>':'')+'</td>'+
+        '<td>'+this.esc(item.course)+'</td>'+
+        '<td>'+this.esc(item.dueDate||'-')+'</td>'+
+        '<td><span class="sbadge '+sc+'">'+this.esc(item.status)+'</span></td>'+
+        '<td><span class="pbadge '+pClass+'">'+this.esc(item.priority)+'</span></td>'+
+        '<td>'+(item.grade&&item.grade!=='-'?item.grade+'%':'-')+(gl?'<span class="gletter">('+gl+')</span>':'')+'</td>'+
+        '<td>'+(item.weight?item.weight+'%':'-')+'</td>'+
+        '<td><div class="prog-wrap"><div class="prog-out"><div class="prog-in'+(pct===100?' full':'')+'" style="width:'+pct+'%"></div></div><span class="prog-lbl">'+pct+'%</span></div></td>'+
+        '<td><button class="tbtn" onclick="event.stopPropagation();app.confirmDelete(\'assignment\' ,'+item.id+')">Delete</button></td>';
+      tb.appendChild(tr);
+    });
+    this.renderWA();
+  },
+
+  // ── Assignment Edit ──
+  createNew() {
+    this.currentId = null;
+    document.getElementById('edit-mode').textContent = 'New';
+    document.getElementById('assign-form').reset();
+    document.getElementById('f-id').textContent = 'New';
+    document.getElementById('f-modified').textContent = '-';
+    this.clearErr(['e-name','e-course','e-due']);
+    this.refreshCourseDropdowns();
+    this.switchView('edit');
+    this.renderNotifItems();
+  },
+  editAssignment(id) {
+    const i = this.data.find(x => x.id===id); if (!i) return;
+    this.currentId = id;
+    document.getElementById('edit-mode').textContent = 'Edit';
+    document.getElementById('f-id').textContent = '#'+String(id).padStart(3,'0');
+    document.getElementById('f-modified').textContent = i.lastModified||'-';
+    document.getElementById('f-name').value = i.name;
+    document.getElementById('f-cat').value = i.category||'Homework';
+    document.getElementById('f-due').value = i.dueDate;
+    document.getElementById('f-status').value = i.status;
+    document.getElementById('f-prio').value = i.priority;
+    document.getElementById('f-grade').value = i.grade!=='-' ? i.grade : '';
+    document.getElementById('f-weight').value = i.weight||'';
+    document.getElementById('f-notes').value = i.notes||'';
+    document.getElementById('f-completed').checked = !!i.completed;
+    document.getElementById('f-secured').checked = !!i.secured;
+    this.refreshCourseDropdowns();
+    document.getElementById('f-course').value = i.course;
+    this.clearErr(['e-name','e-course','e-due']);
+    this.renderNotifItems();
+    this.switchView('edit');
+  },
+  saveAssignment() {
+    const name = document.getElementById('f-name').value.trim();
+    const course = document.getElementById('f-course').value;
+    const due = document.getElementById('f-due').value;
+    let ok = true;
+    this.clearErr(['e-name','e-course','e-due']);
+    if (!name) { this.setErr('e-name','Assignment name is required.'); ok = false; }
+    if (!course) { this.setErr('e-course','Please select a course.'); ok = false; }
+    if (!due) { this.setErr('e-due','Due date is required.'); ok = false; }
+    if (!ok) return;
+    const rec = {
+      id: this.currentId || this.nextId++,
+      name, course,
+      category: document.getElementById('f-cat').value,
+      dueDate: due,
+      status: document.getElementById('f-status').value,
+      priority: document.getElementById('f-prio').value,
+      grade: document.getElementById('f-grade').value || '-',
+      weight: document.getElementById('f-weight').value || 0,
+      notes: document.getElementById('f-notes').value,
+      completed: document.getElementById('f-completed').checked,
+      secured: document.getElementById('f-secured').checked,
+      lastModified: this.ts()
+    };
+    if (this.currentId) { const idx = this.data.findIndex(x=>x.id===this.currentId); if (idx!==-1) this.data[idx]=rec; }
+    else this.data.push(rec);
+    this.save(); this.renderList(); this.updateCourseFilterDropdown();
+    this.switchView('list');
+    this.toast(this.currentId?'Assignment updated.':'Assignment created.');
+    this.currentId = null;
+    this.scheduleReminders();
+  },
+  cancelEdit() {
+    this.currentId = null; this.currentSyllabusId = null;
+    const v = document.querySelector('.view.active');
+    if (v && v.id==='view-syllabus-edit') this.switchView('syllabus');
+    else this.switchView('list');
+  },
+  deleteCurrent() {
+    if (this.currentId) this.confirmDelete('assignment', this.currentId);
+    else if (this.currentSyllabusId) this.confirmDelete('syllabus', this.currentSyllabusId);
+    else this.toast('Select an item first.', true);
+  },
+
+  // ── Syllabus ──
+  sortS(c) { if (this.sylSortCol===c) this.sylSortDir=this.sylSortDir==='asc'?'desc':'asc'; else { this.sylSortCol=c; this.sylSortDir='asc'; } this.renderSyllabus(); },
+  renderSyllabus() {
+    const q = (document.getElementById('syl-search')?.value||'').toLowerCase();
+    const fS = document.getElementById('sf-status')?.value||'';
+    const fP = document.getElementById('sf-prio')?.value||'';
+    let rows = this.syllabusData.filter(i => {
+      const mq = !q || (i.module+i.topic+i.status).toLowerCase().includes(q);
+      return mq && (!fS || i.status===fS) && (!fP || i.priority===fP);
+    });
+    rows.sort((a,b) => {
+      let av=a[this.sylSortCol]??'', bv=b[this.sylSortCol]??'';
+      if (this.sylSortCol==='id') { av=parseInt(av)||0; bv=parseInt(bv)||0; }
+      else { av=String(av).toLowerCase(); bv=String(bv).toLowerCase(); }
+      return this.sylSortDir==='asc' ? (av>bv?1:-1) : (av<bv?1:-1);
+    });
+    document.querySelectorAll('#view-syllabus th[data-col]').forEach(th => {
+      th.classList.remove('sort-asc','sort-desc');
+      if (th.dataset.col===this.sylSortCol) th.classList.add('sort-'+this.sylSortDir);
+    });
+    const tb = document.getElementById('stbody');
+    tb.innerHTML = '';
+    if (!rows.length) { tb.innerHTML = '<tr><td class="empty" colspan="8">No syllabus items found.</td></tr>'; return; }
+    rows.forEach(i => {
+      const sc = i.status==='To Do'?'s-todo':i.status==='In Progress'?'s-prog':'s-done';
+      const pClass = i.priority==='Low'?'p-low':i.priority==='Medium'?'p-med':'p-high';
+      const overdue = this.isOverdue(i.dueDate, i.status);
+      const tr = document.createElement('tr');
+      if (overdue) tr.classList.add('overdue');
+      tr.onclick = () => app.editSyllabus(i.id);
+      tr.innerHTML =
+        '<td><strong>#'+String(i.id).padStart(3,'0')+'</strong></td>'+
+        '<td>'+this.esc(i.module)+(overdue?'<span class="overdue-tag">OVERDUE</span>':'')+'</td>'+
+        '<td>'+this.esc(i.topic)+'</td>'+
+        '<td>'+this.esc(i.dueDate||'-')+'</td>'+
+        '<td><span class="sbadge '+sc+'">'+this.esc(i.status)+'</span></td>'+
+        '<td><span class="pbadge '+pClass+'">'+this.esc(i.priority)+'</span></td>'+
+        '<td>'+(i.completed?'Yes':'No')+'</td>'+
+        '<td><button class="tbtn" onclick="event.stopPropagation();app.confirmDelete(\'syllabus\','+i.id+')">Delete</button></td>';
+      tb.appendChild(tr);
+    });
+  },
+  addSyllabus() { document.getElementById('dd-menu').classList.remove('show'); this.newSyllabus(); },
+  newSyllabus() {
+    this.currentSyllabusId = null;
+    document.getElementById('syl-mode').textContent = 'New';
+    document.getElementById('syl-form').reset();
+    document.getElementById('sf-id').textContent = 'New';
+    document.getElementById('sf-modified').textContent = '-';
+    this.clearErr(['e-sf-mod','e-sf-top']);
+    this.refreshCourseDropdowns();
+    this.switchView('syllabus-edit');
+  },
+  editSyllabus(id) {
+    const i = this.syllabusData.find(x=>x.id===id); if (!i) return;
+    this.currentSyllabusId = id;
+    document.getElementById('syl-mode').textContent = 'Edit';
+    document.getElementById('sf-id').textContent = '#'+String(id).padStart(3,'0');
+    document.getElementById('sf-modified').textContent = i.lastModified||'-';
+    this.refreshCourseDropdowns();
+    document.getElementById('sf-module').value = i.module;
+    document.getElementById('sf-topic').value = i.topic;
+    document.getElementById('sf-due').value = i.dueDate||'';
+    document.getElementById('sf-sstatus').value = i.status;
+    document.getElementById('sf-sprio').value = i.priority;
+    document.getElementById('sf-notes').value = i.notes||'';
+    document.getElementById('sf-completed').checked = !!i.completed;
+    document.getElementById('sf-secured').checked = !!i.secured;
+    this.clearErr(['e-sf-mod','e-sf-top']);
+    this.switchView('syllabus-edit');
+  },
+  saveSyllabus() {
+    const mod = document.getElementById('sf-module').value;
+    const top = document.getElementById('sf-topic').value.trim();
+    let ok = true; this.clearErr(['e-sf-mod','e-sf-top']);
+    if (!mod) { this.setErr('e-sf-mod','Please select a module.'); ok=false; }
+    if (!top) { this.setErr('e-sf-top','Topic is required.'); ok=false; }
+    if (!ok) return;
+    const rec = {
+      id: this.currentSyllabusId || this.nextSyllabusId++,
+      module: mod, topic: top,
+      dueDate: document.getElementById('sf-due').value,
+      status: document.getElementById('sf-sstatus').value,
+      priority: document.getElementById('sf-sprio').value,
+      notes: document.getElementById('sf-notes').value,
+      completed: document.getElementById('sf-completed').checked,
+      secured: document.getElementById('sf-secured').checked,
+      lastModified: this.ts()
+    };
+    if (this.currentSyllabusId) { const idx = this.syllabusData.findIndex(x=>x.id===this.currentSyllabusId); if (idx!==-1) this.syllabusData[idx]=rec; }
+    else this.syllabusData.push(rec);
+    this.save(); this.renderSyllabus();
+    this.switchView('syllabus');
+    this.toast(this.currentSyllabusId?'Syllabus item updated.':'Syllabus item added.');
+    this.currentSyllabusId = null;
+  },
+
+  // ── Modules ──
+  openAddModule() { document.getElementById('dd-menu').classList.remove('show'); document.getElementById('modules-modal').classList.add('show'); document.getElementById('new-module-name').focus(); },
+  closeModulesModal() { document.getElementById('modules-modal').classList.remove('show'); document.getElementById('new-module-name').value=''; document.getElementById('e-module').textContent=''; },
+  saveNewModule() {
+    const n = document.getElementById('new-module-name').value.trim();
+    document.getElementById('e-module').textContent = '';
+    if (!n) { document.getElementById('e-module').textContent = 'Please enter a name.'; return; }
+    if (this.courses.includes(n)) { document.getElementById('e-module').textContent = 'Course already exists.'; return; }
+    this.courses.push(n);
+    this.save(); this.refreshCourseDropdowns(); this.updateCourseFilterDropdown(); this.updateTopicsModuleFilter();
+    this.closeModulesModal();
+    this.toast('Module "'+n+'" added.');
+  },
+
+  // ── Topics ──
+  renderTopics() {
+    const container = document.getElementById('topics-container');
+    if (!container) return;
+    const q = (document.getElementById('topics-search')?.value||'').toLowerCase();
+    const modF = document.getElementById('topics-module-filter')?.value||'';
+    const statF= document.getElementById('topics-status-filter')?.value||'';
+
+    if (!this.courses.length) {
+      container.innerHTML = '<div style="background:white;padding:30px;border-radius:6px;text-align:center;color:var(--muted)">No modules yet. Add a module first from the More menu.</div>';
+      return;
+    }
+
+    let html = '';
+    this.courses.forEach(course => {
+      if (modF && modF !== course) return;
+      const topics = this.topics.filter(t => t.module === course);
+      const subs = this.subtopics;
+      // Filter check per module: keep module if any topic matches
+      const visibleTopics = topics.filter(t => {
+        if (statF && t.status !== statF) return false;
+        if (!q) return true;
+        const topicMatch = t.name.toLowerCase().includes(q);
+        const subMatch = subs.filter(s => s.topicId===t.id).some(s => (s.name+' '+(s.notes||'')).toLowerCase().includes(q));
+        return topicMatch || subMatch;
+      });
+      if (q && !visibleTopics.length) return;
+      if (modF !== course && !topics.length && !q) { /* still show empty module */ }
+
+      // progress: done topics / total (also count subtopics)
+      const total = topics.length + subs.filter(s => topics.some(t => t.id===s.topicId)).length;
+      const done  = topics.filter(t=>t.status==='Done').length + subs.filter(s => s.status==='Done' && topics.some(t => t.id===s.topicId)).length;
+      const pct = total ? Math.round(done/total*100) : 0;
+
+      html += '<div class="module-block">';
+      html += '<div class="module-block-hdr">';
+      html += '<div class="module-title">'+this.esc(course)+' <span style="font-weight:400;color:var(--muted);font-size:0.83rem;margin-left:6px">'+topics.length+' topic'+(topics.length===1?'':'s')+'</span></div>';
+      html += '<div class="module-prog"><span class="mod-pct">'+done+' / '+total+' done</span><div class="mod-prog-bar"><div class="mod-prog-fill" style="width:'+pct+'%"></div></div><span class="mod-pct">'+pct+'%</span></div>';
+      html += '</div>';
+      html += '<div class="module-body">';
+      if (!visibleTopics.length) {
+        html += '<div style="padding:14px 22px;color:var(--muted);font-style:italic;font-size:0.86rem">No topics'+(q?' match your search':' yet')+'.</div>';
+      } else {
+        visibleTopics.forEach(t => {
+          const expanded = this.expandedTopics[t.id];
+          const tSubs = subs.filter(s => s.topicId===t.id);
+          const tSubsMatched = q ? tSubs.filter(s => (s.name+' '+(s.notes||'')).toLowerCase().includes(q)) : tSubs;
+          const showSubs = expanded || (q && tSubsMatched.length);
+          const sc = t.status==='To Do'?'s-todo':t.status==='In Progress'?'s-prog':'s-done';
+          html += '<div class="topic-row">';
+          html += '<div class="topic-hdr">';
+          html += '<input type="checkbox" class="topic-done-cb" '+(t.status==='Done'?'checked':'')+' onclick="app.toggleTopicDone('+t.id+')">';
+          html += '<span class="topic-name '+(t.status==='Done'?'crossed':'')+'" onclick="app.toggleTopicExpand('+t.id+')">'+this.hl(t.name, q)+'</span>';
+          html += '<span class="sbadge '+sc+'">'+this.esc(t.status)+'</span>';
+          html += '<button class="topic-expand" onclick="app.toggleTopicExpand('+t.id+')">'+(showSubs?'Hide':'Show')+' subtopics ('+tSubs.length+')</button>';
+          html += '<div class="topic-actions">';
+          html += '<button class="tact-btn" onclick="app.openAddSubtopic('+t.id+')">+ Sub</button>';
+          html += '<button class="tact-btn" onclick="app.editTopic('+t.id+')">Edit</button>';
+          html += '<button class="tact-btn" onclick="app.confirmDelete(\'topic\','+t.id+')">Delete</button>';
+          html += '</div>';
+          html += '</div>';
+          if (showSubs) {
+            html += '<div class="subtopic-list">';
+            const listToShow = q ? tSubsMatched : tSubs;
+            if (!listToShow.length) {
+              html += '<div style="padding:10px 16px;color:var(--muted);font-style:italic;font-size:0.83rem">No subtopics'+(q?' match':'')+'.</div>';
+            } else {
+              listToShow.forEach(s => {
+                const ssc = s.status==='To Do'?'s-todo':s.status==='In Progress'?'s-prog':'s-done';
+                html += '<div class="subtopic-item">';
+                html += '<input type="checkbox" class="sub-cb" '+(s.status==='Done'?'checked':'')+' onclick="app.toggleSubDone('+s.id+')">';
+                html += '<div class="sub-content">';
+                html += '<span class="sub-name '+(s.status==='Done'?'crossed':'')+'" onclick="app.editSubtopic('+s.id+')">'+this.hl(s.name, q)+'</span>';
+                html += '<span class="sbadge '+ssc+'" style="margin-left:8px;font-size:0.72rem">'+this.esc(s.status)+'</span>';
+                if (s.notes) html += '<div class="sub-notes">'+this.hl(s.notes, q)+'</div>';
+                if (s.docName) html += '<div class="sub-doc"><a href="'+s.docData+'" download="'+this.esc(s.docName)+'">'+this.esc(s.docName)+'</a> <span style="color:var(--muted)">('+s.docSize+')</span></div>';
+                html += '</div>';
+                html += '<div class="sub-actions">';
+                html += '<button class="tact-btn" onclick="app.editSubtopic('+s.id+')">Edit</button>';
+                html += '<button class="tact-btn" onclick="app.confirmDelete(\'subtopic\','+s.id+')">Delete</button>';
+                html += '</div>';
+                html += '</div>';
+              });
+            }
+            html += '</div>';
+          }
+          html += '</div>';
+        });
+      }
+      html += '</div></div>';
+    });
+
+    container.innerHTML = html || '<div style="background:white;padding:30px;border-radius:6px;text-align:center;color:var(--muted)">Nothing to show.</div>';
+  },
+  toggleTopicExpand(id) { this.expandedTopics[id] = !this.expandedTopics[id]; this.renderTopics(); },
+  toggleTopicDone(id) {
+    const t = this.topics.find(x=>x.id===id); if (!t) return;
+    t.status = t.status==='Done' ? 'To Do' : 'Done';
+    this.save(); this.renderTopics();
+  },
+  toggleSubDone(id) {
+    const s = this.subtopics.find(x=>x.id===id); if (!s) return;
+    s.status = s.status==='Done' ? 'To Do' : 'Done';
+    this.save(); this.renderTopics();
+  },
+  openAddTopic() {
+    document.getElementById('dd-menu').classList.remove('show');
+    if (!this.courses.length) { this.toast('Add a module first.', true); return; }
+    this.currentTopicId = null;
+    document.getElementById('topic-modal-title').textContent = 'Add Topic';
+    document.getElementById('t-name').value = '';
+    document.getElementById('t-status').value = 'To Do';
+    document.getElementById('t-done').checked = false;
+    this.refreshCourseDropdowns();
+    this.clearErr(['e-t-mod','e-t-name']);
+    document.getElementById('topic-modal').classList.add('show');
+  },
+  editTopic(id) {
+    const t = this.topics.find(x=>x.id===id); if (!t) return;
+    this.currentTopicId = id;
+    document.getElementById('topic-modal-title').textContent = 'Edit Topic';
+    this.refreshCourseDropdowns();
+    document.getElementById('t-module').value = t.module;
+    document.getElementById('t-name').value = t.name;
+    document.getElementById('t-status').value = t.status;
+    document.getElementById('t-done').checked = t.status==='Done';
+    this.clearErr(['e-t-mod','e-t-name']);
+    document.getElementById('topic-modal').classList.add('show');
+  },
+  closeTopicModal() { document.getElementById('topic-modal').classList.remove('show'); this.currentTopicId=null; },
+  saveTopic() {
+    const mod = document.getElementById('t-module').value;
+    const name = document.getElementById('t-name').value.trim();
+    let ok = true; this.clearErr(['e-t-mod','e-t-name']);
+    if (!mod) { this.setErr('e-t-mod','Select a module.'); ok=false; }
+    if (!name) { this.setErr('e-t-name','Topic name is required.'); ok=false; }
+    if (!ok) return;
+    let status = document.getElementById('t-status').value;
+    if (document.getElementById('t-done').checked) status = 'Done';
+    const rec = { id: this.currentTopicId || this.nextTopicId++, module: mod, name, status };
+    if (this.currentTopicId) { const idx = this.topics.findIndex(x=>x.id===this.currentTopicId); if (idx!==-1) this.topics[idx]=rec; }
+    else this.topics.push(rec);
+    this.save(); this.renderTopics(); this.closeTopicModal();
+    this.toast(this.currentTopicId?'Topic updated.':'Topic added.');
+    this.currentTopicId = null;
+  },
+
+  // ── Subtopics ──
+  openAddSubtopic(topicId) {
+    this.currentSubTopicId = null;
+    this.currentTopicIdForSub = topicId;
+    document.getElementById('sub-modal-title').textContent = 'Add Subtopic';
+    document.getElementById('sub-name').value = '';
+    document.getElementById('sub-status').value = 'To Do';
+    document.getElementById('sub-notes').value = '';
+    document.getElementById('sub-doc-file').value = '';
+    document.getElementById('sub-doc-preview').textContent = '';
+    document.getElementById('sub-done').checked = false;
+    this.pendingDocData = null;
+    this.clearErr(['e-sub-name']);
+    document.getElementById('subtopic-modal').classList.add('show');
+  },
+  editSubtopic(id) {
+    const s = this.subtopics.find(x=>x.id===id); if (!s) return;
+    this.currentSubTopicId = id;
+    this.currentTopicIdForSub = s.topicId;
+    document.getElementById('sub-modal-title').textContent = 'Edit Subtopic';
+    document.getElementById('sub-name').value = s.name;
+    document.getElementById('sub-status').value = s.status;
+    document.getElementById('sub-notes').value = s.notes||'';
+    document.getElementById('sub-doc-file').value = '';
+    document.getElementById('sub-doc-preview').innerHTML = s.docName ? 'Current: <strong>'+this.esc(s.docName)+'</strong> — pick a new file to replace' : '';
+    document.getElementById('sub-done').checked = s.status==='Done';
+    this.pendingDocData = s.docName ? { name: s.docName, data: s.docData, size: s.docSize } : null;
+    this.clearErr(['e-sub-name']);
+    document.getElementById('subtopic-modal').classList.add('show');
+  },
+  closeSubModal() { document.getElementById('subtopic-modal').classList.remove('show'); this.currentSubTopicId=null; this.pendingDocData=null; },
+  previewSubDoc() {
+    const f = document.getElementById('sub-doc-file').files[0];
+    const preview = document.getElementById('sub-doc-preview');
+    if (!f) { preview.textContent=''; this.pendingDocData=null; return; }
+    const sizeMB = f.size/(1024*1024);
+    const sizeStr = sizeMB>=1 ? sizeMB.toFixed(2)+' MB' : (f.size/1024).toFixed(1)+' KB';
+    if (sizeMB > 1) preview.innerHTML = '<span style="color:var(--red)">Warning: '+sizeStr+' — files over 1 MB may slow the app.</span><br>Selected: '+this.esc(f.name);
+    else preview.textContent = 'Selected: ' + f.name + ' (' + sizeStr + ')';
+    const reader = new FileReader();
+    reader.onload = e => { this.pendingDocData = { name: f.name, data: e.target.result, size: sizeStr }; };
+    reader.readAsDataURL(f);
+  },
+  saveSubtopic() {
+    const name = document.getElementById('sub-name').value.trim();
+    this.clearErr(['e-sub-name']);
+    if (!name) { this.setErr('e-sub-name','Subtopic name is required.'); return; }
+    let status = document.getElementById('sub-status').value;
+    if (document.getElementById('sub-done').checked) status = 'Done';
+    const rec = {
+      id: this.currentSubTopicId || this.nextSubtopicId++,
+      topicId: this.currentTopicIdForSub,
+      name, status,
+      notes: document.getElementById('sub-notes').value,
+      docName: this.pendingDocData ? this.pendingDocData.name : '',
+      docData: this.pendingDocData ? this.pendingDocData.data : '',
+      docSize: this.pendingDocData ? this.pendingDocData.size : ''
+    };
+    if (this.currentSubTopicId) { const idx = this.subtopics.findIndex(x=>x.id===this.currentSubTopicId); if (idx!==-1) this.subtopics[idx]=rec; }
+    else this.subtopics.push(rec);
+    if (this.currentTopicIdForSub) this.expandedTopics[this.currentTopicIdForSub] = true;
+    this.save(); this.renderTopics(); this.closeSubModal();
+    this.toast(this.currentSubTopicId?'Subtopic updated.':'Subtopic added.');
+    this.currentSubTopicId = null;
+  },
+
+  // ── Timetable ──
+  switchTTView(v) {
+    this.ttView = v;
+    document.getElementById('tt-btn-grid').classList.toggle('active', v==='grid');
+    document.getElementById('tt-btn-list').classList.toggle('active', v==='list');
+    document.getElementById('tt-grid-view').style.display = v==='grid' ? '' : 'none';
+    document.getElementById('tt-list-view').style.display = v==='list' ? '' : 'none';
+    this.renderTimetable();
+  },
+  renderTimetable() {
+    this.detectConflicts();
+    if (this.ttView === 'grid') this.renderTTGrid();
+    else this.renderTTList();
+  },
+  detectConflicts() {
+    // For each pair on the same day, mark conflict
+    const conflicts = new Set();
+    for (let i=0; i<this.timetable.length; i++) {
+      for (let j=i+1; j<this.timetable.length; j++) {
+        const a = this.timetable[i], b = this.timetable[j];
+        if (a.day !== b.day) continue;
+        if (a.start < b.end && b.start < a.end) { conflicts.add(a.id); conflicts.add(b.id); }
+      }
+    }
+    this._ttConflicts = conflicts;
+    const warn = document.getElementById('tt-conflict-warn');
+    if (conflicts.size) { warn.textContent = 'Warning: '+(conflicts.size)+' timetable slots overlap. Overlapping slots are highlighted in red.'; warn.classList.add('show'); }
+    else warn.classList.remove('show');
+  },
+  renderTTGrid() {
+    const days = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+    const hours = [];
+    for (let h=8; h<=20; h++) hours.push(String(h).padStart(2,'0')+':00');
+    let html = '<div class="tt-grid">';
+    html += '<div class="tt-cell tt-head">Time</div>';
+    days.forEach(d => html += '<div class="tt-cell tt-head">'+d+'</div>');
+    hours.forEach(h => {
+      html += '<div class="tt-cell tt-time">'+h+'</div>';
+      days.forEach(d => {
+        const slots = this.timetable.filter(t => t.day===d && t.start.substring(0,2)===h.substring(0,2));
+        html += '<div class="tt-cell">';
+        slots.forEach(s => {
+          const conflict = this._ttConflicts.has(s.id);
+          html += '<div class="tt-slot'+(conflict?' tt-conflict':'')+'" onclick="app.editTimetable('+s.id+')">';
+          html += '<span class="ts-sub">'+this.esc(s.subject)+'</span>';
+          html += '<span class="ts-lec">'+this.esc(s.lecturer)+'</span>';
+          html += '<span class="ts-time">'+s.start+' - '+s.end+(s.room?' · '+this.esc(s.room):'')+'</span>';
+          html += '</div>';
+        });
+        html += '</div>';
+      });
+    });
+    html += '</div>';
+    document.getElementById('tt-grid-view').innerHTML = html;
+  },
+  renderTTList() {
+    const rows = [...this.timetable].sort((a,b) => {
+      const days = { Monday:1,Tuesday:2,Wednesday:3,Thursday:4,Friday:5,Saturday:6,Sunday:7 };
+      return (days[a.day]||9)-(days[b.day]||9) || a.start.localeCompare(b.start);
+    });
+    let html = '<table class="tt-list-tbl"><thead><tr><th>Day</th><th>Subject</th><th>Lecturer</th><th>Time</th><th>Duration</th><th>Room</th><th></th></tr></thead><tbody>';
+    if (!rows.length) html += '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;font-style:italic">No timetable slots yet.</td></tr>';
+    else rows.forEach(s => {
+      const conflict = this._ttConflicts.has(s.id);
+      html += '<tr onclick="app.editTimetable('+s.id+')"'+(conflict?' style="background:#fff5f5"':'')+'>';
+      html += '<td><strong>'+this.esc(s.day)+'</strong></td>';
+      html += '<td>'+this.esc(s.subject)+'</td>';
+      html += '<td>'+this.esc(s.lecturer)+'</td>';
+      html += '<td>'+s.start+' - '+s.end+'</td>';
+      html += '<td>'+this.calcDuration(s.start, s.end)+'</td>';
+      html += '<td>'+this.esc(s.room||'-')+'</td>';
+      html += '<td><button class="tbtn" onclick="event.stopPropagation();app.confirmDelete(\'timetable\','+s.id+')">Delete</button></td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('tt-list-view').innerHTML = html;
+  },
+  calcDuration(start, end) {
+    if (!start || !end) return '--';
+    const [sh, sm] = start.split(':').map(Number);
+    const [eh, em] = end.split(':').map(Number);
+    const mins = (eh*60+em)-(sh*60+sm);
+    if (mins <= 0) return '--';
+    const h = Math.floor(mins/60), m = mins%60;
+    return (h?h+'h':'') + (m?' '+m+'m':'') || '0m';
+  },
+  updateTTDuration() {
+    const s = document.getElementById('tt-start').value;
+    const e = document.getElementById('tt-end').value;
+    document.getElementById('tt-duration').textContent = this.calcDuration(s, e);
+    // Live conflict check
+    const day = document.getElementById('tt-day').value;
+    const inline = document.getElementById('tt-conflict-inline');
+    inline.classList.remove('show');
+    if (day && s && e) {
+      const overlap = this.timetable.some(t => t.id!==this.currentTTId && t.day===day && t.start<e && s<t.end);
+      if (overlap) { inline.textContent = 'This slot overlaps with an existing class on ' + day + '.'; inline.classList.add('show'); }
+    }
+  },
+  openAddTimetable() {
+    document.getElementById('dd-menu').classList.remove('show');
+    this.currentTTId = null;
+    document.getElementById('tt-modal-title').textContent = 'Add Timetable Slot';
+    ['tt-subject','tt-lecturer','tt-room','tt-notes','tt-day','tt-start','tt-end'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('tt-duration').textContent = '--';
+    document.getElementById('tt-conflict-inline').classList.remove('show');
+    this.clearErr(['e-tt-sub','e-tt-lec','e-tt-day','e-tt-start','e-tt-end']);
+    document.getElementById('tt-modal').classList.add('show');
+  },
+  editTimetable(id) {
+    const s = this.timetable.find(x=>x.id===id); if (!s) return;
+    this.currentTTId = id;
+    document.getElementById('tt-modal-title').textContent = 'Edit Timetable Slot';
+    document.getElementById('tt-subject').value = s.subject;
+    document.getElementById('tt-lecturer').value = s.lecturer;
+    document.getElementById('tt-day').value = s.day;
+    document.getElementById('tt-room').value = s.room||'';
+    document.getElementById('tt-start').value = s.start;
+    document.getElementById('tt-end').value = s.end;
+    document.getElementById('tt-notes').value = s.notes||'';
+    document.getElementById('tt-duration').textContent = this.calcDuration(s.start, s.end);
+    document.getElementById('tt-conflict-inline').classList.remove('show');
+    this.clearErr(['e-tt-sub','e-tt-lec','e-tt-day','e-tt-start','e-tt-end']);
+    document.getElementById('tt-modal').classList.add('show');
+  },
+  closeTTModal() { document.getElementById('tt-modal').classList.remove('show'); this.currentTTId=null; },
+  saveTimetable() {
+    const sub = document.getElementById('tt-subject').value.trim();
+    const lec = document.getElementById('tt-lecturer').value.trim();
+    const day = document.getElementById('tt-day').value;
+    const start = document.getElementById('tt-start').value;
+    const end = document.getElementById('tt-end').value;
+    let ok = true;
+    this.clearErr(['e-tt-sub','e-tt-lec','e-tt-day','e-tt-start','e-tt-end']);
+    if (!sub) { this.setErr('e-tt-sub','Subject is required.'); ok=false; }
+    if (!lec) { this.setErr('e-tt-lec','Lecturer name is required.'); ok=false; }
+    if (!day) { this.setErr('e-tt-day','Please select a day.'); ok=false; }
+    if (!start) { this.setErr('e-tt-start','Start time is required.'); ok=false; }
+    if (!end) { this.setErr('e-tt-end','End time is required.'); ok=false; }
+    if (start && end && start >= end) { this.setErr('e-tt-end','End must be after start.'); ok=false; }
+    if (!ok) return;
+    const rec = {
+      id: this.currentTTId || this.nextTTId++,
+      subject: sub, lecturer: lec, day,
+      room: document.getElementById('tt-room').value,
+      start, end,
+      notes: document.getElementById('tt-notes').value
+    };
+    if (this.currentTTId) { const idx = this.timetable.findIndex(x=>x.id===this.currentTTId); if (idx!==-1) this.timetable[idx]=rec; }
+    else this.timetable.push(rec);
+    this.save(); this.renderTimetable(); this.closeTTModal();
+    this.toast(this.currentTTId?'Slot updated.':'Slot added.');
+    this.currentTTId = null;
+    this.scheduleReminders();
+  },
+  exportTimetable() {
+    const rows = [['Day','Subject','Lecturer','Start','End','Duration','Room','Notes']];
+    this.timetable.forEach(t => rows.push([t.day, t.subject, t.lecturer, t.start, t.end, this.calcDuration(t.start,t.end), t.room||'', t.notes||'']));
+    const csv = rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'timetable.csv'; a.click();
+    URL.revokeObjectURL(url);
+    this.toast('Timetable exported as CSV.');
+  },
+  exportTimetableHTML() {
+    const days = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+    let html = '<html><head><title>Timetable</title><style>body{font-family:sans-serif;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:8px;text-align:left}th{background:#4a90e2;color:white}</style></head><body><h1>My Timetable</h1><table><tr><th>Day</th><th>Subject</th><th>Lecturer</th><th>Time</th><th>Room</th></tr>';
+    days.forEach(d => this.timetable.filter(t=>t.day===d).sort((a,b)=>a.start.localeCompare(b.start)).forEach(t => {
+      html += '<tr><td>'+t.day+'</td><td>'+t.subject+'</td><td>'+t.lecturer+'</td><td>'+t.start+' - '+t.end+'</td><td>'+(t.room||'')+'</td></tr>';
+    }));
+    html += '</table></body></html>';
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'timetable.html'; a.click();
+    URL.revokeObjectURL(url);
+    this.toast('Timetable exported as HTML.');
+  },
+
+  // ── Reminders (in-page + Firebase-ready) ──
+  scheduleReminders() {
+    this.reminderTimers.forEach(id => clearTimeout(id));
+    this.reminderTimers = [];
+    const lead = parseInt(this.notifSettings.leadMinutes)||10;
+    const now = new Date();
+    const dayIdx = { Sunday:0,Monday:1,Tuesday:2,Wednesday:3,Thursday:4,Friday:5,Saturday:6 };
+    this.timetable.forEach(slot => {
+      if (this.notifSettings.selectedTT.length && !this.notifSettings.selectedTT.includes(slot.id)) return;
+      const target = new Date(now);
+      const diff = (dayIdx[slot.day] - now.getDay() + 7) % 7;
+      target.setDate(now.getDate() + diff);
+      const [sh, sm] = slot.start.split(':').map(Number);
+      target.setHours(sh, sm - lead, 0, 0);
+      let delay = target - now;
+      if (delay < 0) delay += 7*24*60*60*1000;
+      if (delay > 0 && delay < 24*60*60*1000) {
+        const id = setTimeout(() => this.fireReminder(slot), delay);
+        this.reminderTimers.push(id);
+      }
+    });
+  },
+fireReminder(slot) {
+    const msg = slot.subject + ' with ' + slot.lecturer + ' starts at ' + slot.start + (slot.room?' in '+slot.room:'');
+    
+    // Display the phone number being used in the local toast
+    const phoneTarget = this.userPhone ? this.userPhone : "unknown number";
+    this.toast('Dispatching SMS to ' + phoneTarget + ': ' + msg);
+
+    // *NOTE*: To actually send a real SMS text message to this phone number, 
+    // you will need to pass `this.userPhone` and `msg` to a backend API (like Twilio) here.
+    // Firebase frontend SDKs do not send SMS messages on their own.
+
+    if (this.notifSettings.pushEnabled && this.firebaseConnected && 'Notification' in window && Notification.permission === 'granted') {
+      new Notification('Class Reminder', { body: msg, icon: '' });
+    } else if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('Class Reminder', { body: msg });
+    }
+  },
+
+  // ── Notification Settings ──
+  showNotifSettings() {
+    document.getElementById('dd-menu').classList.remove('show');
+    document.getElementById('nf-freq-modal').value = this.notifSettings.frequency;
+    document.getElementById('nf-time-modal').value = this.notifSettings.time;
+    document.getElementById('nt-lead').value = this.notifSettings.leadMinutes;
+    document.getElementById('nt-push-enable').checked = this.notifSettings.pushEnabled;
+    this.renderNotifItemsModal(); this.renderNotifTTModal(); this.updateNotifPreview();
+    document.getElementById('notif-modal').classList.add('show');
+  },
+  closeNotifSettings() { document.getElementById('notif-modal').classList.remove('show'); },
+  renderNotifItems() {
+    const c = document.getElementById('nf-items');
+    if (!c) return;
+    c.innerHTML = this.data.length
+      ? this.data.map(i => '<div class="nitem"><input type="checkbox" id="ni-'+i.id+'" '+(this.notifSettings.selectedItems.includes(i.id)?'checked':'')+'><label for="ni-'+i.id+'">'+this.esc(i.name)+' ('+this.esc(i.course)+') — Due: '+(i.dueDate||'N/A')+'</label></div>').join('')
+      : '<p style="color:var(--muted);font-size:0.83rem">No assignments yet.</p>';
+  },
+  renderNotifItemsModal() {
+    const c = document.getElementById('nf-items-modal');
+    if (!c) return;
+    c.innerHTML = this.data.length
+      ? this.data.map(i => '<div class="nitem"><input type="checkbox" id="nm-'+i.id+'" '+(this.notifSettings.selectedItems.includes(i.id)?'checked':'')+' onchange="app.updateNotifPreview()"><label for="nm-'+i.id+'">'+this.esc(i.name)+' ('+this.esc(i.course)+') — Due: '+(i.dueDate||'N/A')+'</label></div>').join('')
+      : '<p style="color:var(--muted);font-size:0.83rem">No assignments yet.</p>';
+  },
+  renderNotifTTModal() {
+    const c = document.getElementById('nf-items-tt-modal');
+    if (!c) return;
+    c.innerHTML = this.timetable.length
+      ? this.timetable.map(t => '<div class="nitem"><input type="checkbox" id="ntm-'+t.id+'" '+(this.notifSettings.selectedTT.includes(t.id)?'checked':'')+' onchange="app.updateNotifPreview()"><label for="ntm-'+t.id+'">'+this.esc(t.subject)+' — '+this.esc(t.day)+' '+t.start+' with '+this.esc(t.lecturer)+'</label></div>').join('')
+      : '<p style="color:var(--muted);font-size:0.83rem">No timetable slots yet.</p>';
+  },
+  updateNotifPreview() {
+    const freq = document.getElementById('nf-freq-modal')?.value||'daily';
+    const time = document.getElementById('nf-time-modal')?.value||'morning';
+    const lead = document.getElementById('nt-lead')?.value||'10';
+    const aItems = [...document.querySelectorAll('#nf-items-modal input:checked')].map(cb => { const id=parseInt(cb.id.replace('nm-','')); return this.data.find(i=>i.id===id); }).filter(Boolean);
+    const tItems = [...document.querySelectorAll('#nf-items-tt-modal input:checked')].map(cb => { const id=parseInt(cb.id.replace('ntm-','')); return this.timetable.find(i=>i.id===id); }).filter(Boolean);
+    const timeLbl = { morning:'8:00 AM', afternoon:'1:00 PM', evening:'6:00 PM', custom:'custom time' }[time]||time;
+    const freqLbl = { daily:'daily', 'twice-daily':'twice a day', hourly:'every hour', 'only-overdue':'only when overdue' }[freq]||freq;
+    let msg = '';
+    if (aItems.length) msg += 'Assignments (' + freqLbl + ' at ' + timeLbl + '):\\n' + aItems.map(i => '  - '+i.name+' (Due: '+(i.dueDate||'N/A')+')').join('\\n');
+    if (tItems.length) msg += (msg?'\\n\\n':'') + 'Timetable reminders (' + lead + ' min before class):\\n' + tItems.map(i => '  - '+i.subject+' on '+i.day+' at '+i.start).join('\\n');
+    if (!msg) msg = 'No items selected. Pick assignments or timetable slots above.';
+    document.getElementById('notif-prev-msg').textContent = msg;
+  },
+  async saveNotifSettings() {
+    this.notifSettings.frequency = document.getElementById('nf-freq-modal').value;
+    this.notifSettings.time = document.getElementById('nf-time-modal').value;
+    this.notifSettings.leadMinutes = parseInt(document.getElementById('nt-lead').value)||10;
+    this.notifSettings.pushEnabled = document.getElementById('nt-push-enable').checked;
+    this.notifSettings.selectedItems = [...document.querySelectorAll('#nf-items-modal input:checked')].map(cb => parseInt(cb.id.replace('nm-','')));
+    this.notifSettings.selectedTT   = [...document.querySelectorAll('#nf-items-tt-modal input:checked')].map(cb => parseInt(cb.id.replace('ntm-','')));
+
+    if (this.notifSettings.pushEnabled && 'Notification' in window) {
+      try {
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') this.toast('Push permission denied — reminders will still show in-app.', true);
+      } catch(e) {}
+    }
+    this.save(); this.renderNotifItems(); this.closeNotifSettings(); this.scheduleReminders();
+    this.toast('Notification settings saved.');
+  },
+
+  // ── Firebase ──
+openFirebaseConfig() {
+    document.getElementById('dd-menu').classList.remove('show');
+    document.getElementById('fb-api-key').value = this.firebaseConfig.apiKey || '';
+    document.getElementById('fb-auth-domain').value = this.firebaseConfig.authDomain || '';
+    document.getElementById('fb-project-id').value = this.firebaseConfig.projectId || '';
+    document.getElementById('fb-db-url').value = this.firebaseConfig.databaseURL || ''; 
+    document.getElementById('fb-storage').value = this.firebaseConfig.storageBucket || '';
+    document.getElementById('fb-sender').value = this.firebaseConfig.messagingSenderId || '';
+    document.getElementById('fb-app-id').value = this.firebaseConfig.appId || '';
+    document.getElementById('fb-vapid').value = this.firebaseConfig.vapidKey || '';
+    this.updateFBStatus();
+    document.getElementById('fb-modal').classList.add('show');
+  },
+  closeFBModal() { document.getElementById('fb-modal').classList.remove('show'); },
+  updateFBStatus() {
+    const dot = document.getElementById('fb-status-dot');
+    const txt = document.getElementById('fb-status-text');
+    if (this.firebaseConnected) { dot.className='fb-dot connected'; txt.textContent='Connected to Firebase project: '+this.firebaseConfig.projectId; }
+    else if (this.firebaseConfig.apiKey) { dot.className='fb-dot error'; txt.textContent='Configured but not verified'; }
+    else { dot.className='fb-dot'; txt.textContent='Not connected'; }
+  },
+  async saveFBConfig() {
+    this.firebaseConfig = {
+      apiKey: document.getElementById('fb-api-key').value.trim(),
+      authDomain: document.getElementById('fb-auth-domain').value.trim(),
+      projectId: document.getElementById('fb-project-id').value.trim(),
+      databaseURL: document.getElementById('fb-db-url').value.trim(),
+      storageBucket: document.getElementById('fb-storage').value.trim(),
+      messagingSenderId: document.getElementById('fb-sender').value.trim(),
+      appId: document.getElementById('fb-app-id').value.trim(),
+      vapidKey: document.getElementById('fb-vapid').value.trim()
+    };
+    
+    // Attempt connection
+    if (this.firebaseConfig.apiKey && this.firebaseConfig.projectId) {
+      await this.initFirebase();
+      this.toast(this.firebaseConnected ? 'Firebase connected and synced.' : 'Connection failed. Check credentials.', !this.firebaseConnected);
+    } else {
+      this.firebaseConnected = false;
+      this.updateFBStatus();
+      this.toast('Fill in API Key and Project ID.', true);
+    }
+    
+    this.save(); // Save the new config locally
+    this.closeFBModal();
+    
+    // Re-render UI with any downloaded data
+    if (this.firebaseConnected) {
+      this.refreshCourseDropdowns();
+      this.renderList(); this.renderSyllabus(); this.renderTopics(); this.renderTimetable();
+    }
+  },
+/*  async saveFBConfig() {
+    this.firebaseConfig = {
+      apiKey: document.getElementById('fb-api-key').value.trim(),
+      authDomain: document.getElementById('fb-auth-domain').value.trim(),
+      projectId: document.getElementById('fb-project-id').value.trim(),
+      storageBucket: document.getElementById('fb-storage').value.trim(),
+      messagingSenderId: document.getElementById('fb-sender').value.trim(),
+      appId: document.getElementById('fb-app-id').value.trim(),
+      vapidKey: document.getElementById('fb-vapid').value.trim()
+    };
+    this.save();
+    this.firebaseConnected = !!(this.firebaseConfig.apiKey && this.firebaseConfig.projectId);
+    this.updateFBStatus();
+    this.toast(this.firebaseConnected ? 'Firebase configuration saved.' : 'Fill in API Key and Project ID.', !this.firebaseConnected);
+    this.closeFBModal();
+  },*/
+
+  // ── Delete Confirm ──
+  confirmDelete(type, id) {
+    let label = 'this item';
+    if (type==='assignment') label = this.data.find(i=>i.id===id)?.name||label;
+    if (type==='syllabus')   label = this.syllabusData.find(i=>i.id===id)?.topic||label;
+    if (type==='topic')      label = this.topics.find(i=>i.id===id)?.name||label;
+    if (type==='subtopic')   label = this.subtopics.find(i=>i.id===id)?.name||label;
+    if (type==='timetable')  { const s = this.timetable.find(i=>i.id===id); label = s ? s.subject+' ('+s.day+' '+s.start+')' : label; }
+    document.getElementById('confirm-msg').textContent = 'Delete "'+label+'"?';
+    this.pendingDeleteFn = () => {
+      if (type==='assignment') { this.data = this.data.filter(i=>i.id!==id); if (this.currentId===id) this.currentId=null; this.save(); this.renderList(); this.switchView('list'); }
+      if (type==='syllabus')   { this.syllabusData = this.syllabusData.filter(i=>i.id!==id); if (this.currentSyllabusId===id) this.currentSyllabusId=null; this.save(); this.renderSyllabus(); this.switchView('syllabus'); }
+      if (type==='topic')      { this.topics = this.topics.filter(i=>i.id!==id); this.subtopics = this.subtopics.filter(s=>s.topicId!==id); this.save(); this.renderTopics(); }
+      if (type==='subtopic')   { this.subtopics = this.subtopics.filter(i=>i.id!==id); this.save(); this.renderTopics(); }
+      if (type==='timetable')  { this.timetable = this.timetable.filter(i=>i.id!==id); this.save(); this.renderTimetable(); this.scheduleReminders(); }
+      this.toast('Item deleted.');
+    };
+    document.getElementById('confirm-modal').classList.add('show');
+  },
+  confirmDeleteAction() { if (this.pendingDeleteFn) this.pendingDeleteFn(); this.pendingDeleteFn=null; this.closeConfirm(); },
+  closeConfirm() { document.getElementById('confirm-modal').classList.remove('show'); this.pendingDeleteFn=null; },
+
+  // ── Utils ──
+  setErr(id, msg) { const el=document.getElementById(id); if (el) el.textContent=msg; },
+  clearErr(ids) { ids.forEach(id => this.setErr(id, '')); },
+  toast(msg, err) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (err?' terror':'');
+    t.style.display = 'block';
+    clearTimeout(this._tt);
+    this._tt = setTimeout(() => t.style.display='none', 3000);
+  }
+};
+window.app = app;
+document.addEventListener('DOMContentLoaded', () => app.init());
+
+window.firebaseModules = { initializeApp, getApps, deleteApp, getDatabase, ref, set, get, child, getMessaging, getToken, onMessage };</script>
+</body>
+</html>

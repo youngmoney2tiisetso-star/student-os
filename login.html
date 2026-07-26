@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Student OS</title>
+    <style>
+        :root {
+            --primary-blue: #4a90e2;
+            --bg-light: #f4f6f9;
+            --border-color: #e0e0e0;
+            --text-dark: #333;
+            --text-muted: #666;
+            --danger-red: #dc3545;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .auth-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary-blue);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: var(--primary-blue);
+            border-bottom: 2px solid var(--primary-blue);
+            margin-bottom: -2px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .form-control {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        .btn-submit {
+            background-color: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            width: 100%;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background-color: #357abd;
+        }
+
+        #error-msg {
+            color: var(--danger-red);
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 15px;
+            min-height: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <div class="auth-header">Student OS</div>
+        
+        <div class="tabs">
+            <div class="tab active" id="tab-login">Login</div>
+            <div class="tab" id="tab-register">Register</div>
+        </div>
+
+        <form id="auth-form">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" class="form-control" required>
+            </div>
+            
+            <!-- Phone Number (Hidden on Login, Visible on Register) -->
+            <div class="form-group hidden" id="phone-group">
+                <label>Phone Number (For Messaging)</label>
+                <input type="tel" id="phone" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" class="form-control" required>
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn-submit">Sign In</button>
+        </form>
+
+        <div id="error-msg"></div>
+    </div>
+
+    <!-- Firebase Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5ch9QflS16D3Jo7ZuCv5hdhttY19lXAg",
+            authDomain: "chool-1b948.firebaseapp.com",
+            projectId: "chool-1b948"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let isLoginMode = true;
+
+        // UI Elements
+        const tabLogin = document.getElementById('tab-login');
+        const tabRegister = document.getElementById('tab-register');
+        const phoneGroup = document.getElementById('phone-group');
+        const phoneInput = document.getElementById('phone');
+        const submitBtn = document.getElementById('submit-btn');
+        const errorMsg = document.getElementById('error-msg');
+        const authForm = document.getElementById('auth-form');
+
+        // Toggle to Login
+        tabLogin.addEventListener('click', () => {
+            isLoginMode = true;
+            tabLogin.classList.add('active');
+            tabRegister.classList.remove('active');
+            phoneGroup.classList.add('hidden');
+            phoneInput.removeAttribute('required');
+            submitBtn.textContent = 'Sign In';
+            errorMsg.textContent = '';
+        });
+
+        // Toggle to Register
+        tabRegister.addEventListener('click', () => {
+            isLoginMode = false;
+            tabRegister.classList.add('active');
+            tabLogin.classList.remove('active');
+            phoneGroup.classList.remove('hidden');
+            phoneInput.setAttribute('required', 'true');
+            submitBtn.textContent = 'Create Account';
+            errorMsg.textContent = '';
+        });
+
+        // Handle Form Submission
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const phone = phoneInput.value;
+            
+            errorMsg.textContent = '';
+            submitBtn.textContent = 'Processing...';
+
+            try {
+                if (isLoginMode) {
+                    // Standard Login
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    // 1. Create the user in Firebase Authentication
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+
+                    // 2. Save the phone number to Firestore for messaging
+                    await setDoc(doc(db, 'users', user.uid), {
+                        email: user.email,
+                        phoneNumber: phone,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+            } catch (error) {
+                console.error(error);
+                errorMsg.textContent = error.message;
+                submitBtn.textContent = isLoginMode ? 'Sign In' : 'Create Account';
+            }
+        });
+
+        // Redirect if already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Change 'index2.html' to whatever you named your main dashboard file
+                window.location.href = '222.html'; 
+            }
+        });
+    </script>
+</body>
+</html>
