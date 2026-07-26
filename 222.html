@@ -735,7 +735,7 @@ loadLocalConfig() {
     if (this.firebaseConnected && window.db) {
       try {
         const { ref, set } = window.firebaseModules;
-        await set(ref(window.db, 'studentOS_data'), {
+        await set(ref(window.db, `users/${uid}/data`), {
           data: this.data,
           syllabusData: this.syllabusData,
           courses: this.courses,
